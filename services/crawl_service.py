@@ -12,7 +12,6 @@ Crawl Service
     將 V5 Pipeline 的 URL
     交給底層 crawler.py 執行 HTTP Download。
 
-
 架構：
 
     SearchResult / Target
@@ -409,38 +408,21 @@ Pipeline：
                                     MongoDB
 """
 
-
-# ==================================================
-#
-# Standard Library
-#
-# ==================================================
-
 import hashlib
-
 
 from dataclasses import (
     dataclass,
     field,
 )
 
-
 from datetime import (
     datetime,
     timezone,
 )
 
-
 from typing import (
     Optional,
 )
-
-
-# ==================================================
-#
-# Existing Crawler
-#
-# ==================================================
 
 from crawler.crawler import (
     download,
@@ -448,56 +430,22 @@ from crawler.crawler import (
     download_resources,
 )
 
-
-# ==================================================
-#
-# Raw HTML Repository
-#
-# ==================================================
-
 from database.raw_html_repository import (
     RawHTMLRepository,
 )
-
-
-# ==================================================
-#
-# Keyword Processor
-#
-# ==================================================
 
 from utils.keyword_processor import (
     KeywordProcessor,
 )
 
-
-# ==================================================
-#
-# Keyword Link Detector
-#
-# ==================================================
-
 from services.keyword_link_detector import (
     KeywordLinkDetector,
 )
-
-
-# ==================================================
-#
-# Logger
-#
-# ==================================================
 
 from utils.logger import (
     logger,
 )
 
-
-# ==================================================
-#
-# Crawl Result
-#
-# ==================================================
 
 @dataclass
 class CrawlResult:
@@ -529,56 +477,17 @@ class CrawlResult:
             Related Crawl
     """
 
-    # --------------------------------------------------
-    # Original URL
-    # --------------------------------------------------
-
     url: str
-
-    # --------------------------------------------------
-    # Resolved URL
-    # --------------------------------------------------
 
     resolved_url: Optional[str] = None
 
-    # --------------------------------------------------
-    # Raw HTML
-    # --------------------------------------------------
-
     html: Optional[str] = None
-
-    # --------------------------------------------------
-    # Raw HTML Content Hash
-    # --------------------------------------------------
 
     content_hash: Optional[str] = None
 
-    # --------------------------------------------------
-    # Article ID
-    #
-    # Crawl 階段尚未建立 Article。
-    # 因此預設 None。
-    # --------------------------------------------------
-
     article_id: Optional[int] = None
 
-    # --------------------------------------------------
-    # Document ID
-    #
-    # Crawl 階段尚未建立 Article Document Identity。
-    # 因此預設 None。
-    # --------------------------------------------------
-
     document_id: Optional[str] = None
-
-    # --------------------------------------------------
-    # Resources
-    #
-    # {
-    #     "css": [],
-    #     "images": []
-    # }
-    # --------------------------------------------------
 
     resources: dict = field(
         default_factory=lambda: {
@@ -587,33 +496,15 @@ class CrawlResult:
         }
     )
 
-    # --------------------------------------------------
-    # Success
-    # --------------------------------------------------
-
     success: bool = False
 
-    # --------------------------------------------------
-    # Error
-    # --------------------------------------------------
-
     error: Optional[str] = None
-
-    # --------------------------------------------------
-    # Crawl Time
-    # --------------------------------------------------
 
     crawl_time: datetime = field(
         default_factory=lambda: datetime.now(
             timezone.utc
         )
     )
-
-    # ==================================================
-    #
-    # Properties
-    #
-    # ==================================================
 
     @property
     def has_html(self):
@@ -626,8 +517,6 @@ class CrawlResult:
             and self.html
         )
 
-    # ==================================================
-
     @property
     def has_hash(self):
         """
@@ -637,8 +526,6 @@ class CrawlResult:
         return bool(
             self.content_hash
         )
-
-    # ==================================================
 
     @property
     def has_resources(self):
@@ -669,8 +556,6 @@ class CrawlResult:
             or images
         )
 
-    # ==================================================
-
     @property
     def final_url(self):
         """
@@ -685,12 +570,6 @@ class CrawlResult:
             or self.url
         )
 
-
-# ==================================================
-#
-# Crawl Service
-#
-# ==================================================
 
 class CrawlService:
     """
@@ -745,12 +624,6 @@ class CrawlService:
 
         避免 Circular Import。
     """
-
-    # ==================================================
-    #
-    # Constructor
-    #
-    # ==================================================
 
     def __init__(
         self,
@@ -850,66 +723,36 @@ class CrawlService:
                 )
         """
 
-        # ==================================================
-        #
-        # Downloader
-        #
-        # ==================================================
-
         if downloader is None:
-
             downloader = download
 
         if not callable(
             downloader
         ):
-
             raise TypeError(
                 "downloader must be callable"
             )
 
-        self.downloader = (
-            downloader
-        )
-
-        # ==================================================
-        #
-        # URL Resolver
-        #
-        # ==================================================
+        self.downloader = downloader
 
         if url_resolver is None:
-
             url_resolver = resolve_url
 
         if not callable(
             url_resolver
         ):
-
             raise TypeError(
                 "url_resolver must be callable"
             )
 
-        self.url_resolver = (
-            url_resolver
-        )
-
-        # ==================================================
-        #
-        # Resource Downloader
-        #
-        # ==================================================
+        self.url_resolver = url_resolver
 
         if resource_downloader is None:
-
-            resource_downloader = (
-                download_resources
-            )
+            resource_downloader = download_resources
 
         if not callable(
             resource_downloader
         ):
-
             raise TypeError(
                 "resource_downloader "
                 "must be callable"
@@ -919,14 +762,7 @@ class CrawlService:
             resource_downloader
         )
 
-        # ==================================================
-        #
-        # Raw HTML Repository
-        #
-        # ==================================================
-
         if raw_html_repository is None:
-
             raw_html_repository = (
                 RawHTMLRepository()
             )
@@ -935,24 +771,11 @@ class CrawlService:
             raw_html_repository
         )
 
-        # ==================================================
-        #
-        # Save Raw HTML
-        #
-        # ==================================================
-
         self.save_raw_html = bool(
             save_raw_html
         )
 
-        # ==================================================
-        #
-        # Keyword Processor
-        #
-        # ==================================================
-
         if keyword_processor is None:
-
             keyword_processor = (
                 KeywordProcessor()
             )
@@ -961,7 +784,6 @@ class CrawlService:
             keyword_processor,
             "process",
         ):
-
             raise TypeError(
                 "keyword_processor "
                 "must provide process()"
@@ -971,14 +793,7 @@ class CrawlService:
             keyword_processor
         )
 
-        # ==================================================
-        #
-        # Keyword Link Detector
-        #
-        # ==================================================
-
         if keyword_link_detector is None:
-
             keyword_link_detector = (
                 KeywordLinkDetector()
             )
@@ -987,7 +802,6 @@ class CrawlService:
             keyword_link_detector,
             "detect",
         ):
-
             raise TypeError(
                 "keyword_link_detector "
                 "must provide detect()"
@@ -997,22 +811,14 @@ class CrawlService:
             keyword_link_detector
         )
 
-        # ==================================================
-        #
-        # Related Crawl Service
-        #
-        # ==================================================
-
         if (
             related_crawl_service
             is not None
         ):
-
             if not hasattr(
                 related_crawl_service,
                 "process_many",
             ):
-
                 raise TypeError(
                     "related_crawl_service "
                     "must provide "
@@ -1022,12 +828,6 @@ class CrawlService:
         self.related_crawl_service = (
             related_crawl_service
         )
-
-    # ==================================================
-    #
-    # Detect Related URLs
-    #
-    # ==================================================
 
     def detect_related_urls(
         self,
@@ -1063,27 +863,16 @@ class CrawlService:
             未存在 URL 優先。
         """
 
-        # --------------------------------------------------
-        # Validate HTML
-        # --------------------------------------------------
-
         if not isinstance(
             html,
             str,
         ):
-
             return []
 
         if not html.strip():
-
             return []
 
-        # --------------------------------------------------
-        # Validate Keyword
-        # --------------------------------------------------
-
         if keyword is None:
-
             return []
 
         keyword = str(
@@ -1091,27 +880,17 @@ class CrawlService:
         ).strip()
 
         if not keyword:
-
             return []
 
-        # --------------------------------------------------
-        # Process Keyword
-        # --------------------------------------------------
-
         try:
-
             processed_keyword = (
                 self.keyword_processor.process(
-
                     keyword,
-
                     target_language,
-
                 )
             )
 
         except Exception as exc:
-
             logger.exception(
                 "Keyword processing failed: "
                 f"keyword={keyword}, "
@@ -1120,15 +899,10 @@ class CrawlService:
 
             return []
 
-        # --------------------------------------------------
-        # Validate Processed Keyword
-        # --------------------------------------------------
-
         if not isinstance(
             processed_keyword,
             dict,
         ):
-
             logger.warning(
                 "KeywordProcessor returned "
                 "invalid result type: "
@@ -1138,30 +912,18 @@ class CrawlService:
 
             return []
 
-        # --------------------------------------------------
-        # Detect Related URLs
-        # --------------------------------------------------
-
         try:
-
             related_urls = (
                 self.keyword_link_detector.detect(
-
                     html,
-
                     processed_keyword,
-
                     base_url=(
-
                         base_url
-
                     ),
-
                 )
             )
 
         except Exception as exc:
-
             logger.exception(
                 "Keyword link detection failed: "
                 f"keyword={keyword}, "
@@ -1171,19 +933,13 @@ class CrawlService:
 
             return []
 
-        # --------------------------------------------------
-        # Validate Detector Result
-        # --------------------------------------------------
-
         if related_urls is None:
-
             return []
 
         if not isinstance(
             related_urls,
             list,
         ):
-
             logger.warning(
                 "Keyword link detector returned "
                 "invalid result type: "
@@ -1193,12 +949,6 @@ class CrawlService:
             return []
 
         return related_urls
-
-    # ==================================================
-    #
-    # Handle Related URLs
-    #
-    # ==================================================
 
     def _handle_related_urls(
         self,
@@ -1237,34 +987,17 @@ class CrawlService:
         """
 
         if not related_urls:
-
             return None
 
         try:
-
-            # ==================================================
-            #
-            # RelatedCrawlService
-            #
-            # 優先使用外部注入的 Service。
-            #
-            # ==================================================
-
             related_crawl_service = (
                 self.related_crawl_service
             )
-
-            # ==================================================
-            #
-            # Runtime Lazy Import
-            #
-            # ==================================================
 
             if (
                 related_crawl_service
                 is None
             ):
-
                 from services.related_crawl_service import (
                     RelatedCrawlService,
                 )
@@ -1273,19 +1006,10 @@ class CrawlService:
                     RelatedCrawlService()
                 )
 
-            # ==================================================
-            #
-            # Process Related URLs
-            #
-            # ==================================================
-
             result = (
                 related_crawl_service.process_many(
-
                     related_urls,
-
                     keyword,
-
                 )
             )
 
@@ -1298,7 +1022,6 @@ class CrawlService:
             return result
 
         except Exception as exc:
-
             logger.exception(
                 "Related Crawl failed: "
                 f"keyword={keyword}, "
@@ -1306,20 +1029,7 @@ class CrawlService:
                 f"error={exc}"
             )
 
-            # --------------------------------------------------
-            # IMPORTANT
-            #
-            # Related Crawl Failure
-            # 不影響 Original Crawl。
-            # --------------------------------------------------
-
             return None
-
-    # ==================================================
-    #
-    # Crawl
-    #
-    # ==================================================
 
     def crawl(
         self,
@@ -1366,14 +1076,7 @@ class CrawlService:
                                   MongoDB
         """
 
-        # ==================================================
-        #
-        # Validate URL
-        #
-        # ==================================================
-
         try:
-
             normalized_url = (
                 self.normalize_url(
                     url
@@ -1381,48 +1084,28 @@ class CrawlService:
             )
 
         except Exception as exc:
-
             return CrawlResult(
-
                 url=str(
                     url
                 ),
-
                 resolved_url=None,
-
                 html=None,
-
                 content_hash=None,
-
                 article_id=None,
-
                 document_id=None,
-
                 resources={
                     "css": [],
                     "images": [],
                 },
-
                 success=False,
-
                 error=str(
                     exc
                 ),
-
             )
 
-        # ==================================================
-        #
-        # Resolve URL
-        #
-        # ==================================================
-
-        resolved_url = (
-            normalized_url
-        )
+        resolved_url = normalized_url
 
         try:
-
             resolved_url = (
                 self.url_resolver(
                     normalized_url
@@ -1436,10 +1119,7 @@ class CrawlService:
             )
 
         except Exception as exc:
-
-            resolved_url = (
-                normalized_url
-            )
+            resolved_url = normalized_url
 
             logger.warning(
                 "URL resolution failed: "
@@ -1447,14 +1127,7 @@ class CrawlService:
                 f"error={exc}"
             )
 
-        # ==================================================
-        #
-        # Download HTML
-        #
-        # ==================================================
-
         try:
-
             html = (
                 self.downloader(
                     normalized_url
@@ -1462,7 +1135,6 @@ class CrawlService:
             )
 
         except Exception as exc:
-
             logger.exception(
                 "Crawl download failed: "
                 f"url={normalized_url}, "
@@ -1470,83 +1142,49 @@ class CrawlService:
             )
 
             return CrawlResult(
-
                 url=normalized_url,
-
                 resolved_url=resolved_url,
-
                 html=None,
-
                 content_hash=None,
-
                 article_id=None,
-
                 document_id=None,
-
                 resources={
                     "css": [],
                     "images": [],
                 },
-
                 success=False,
-
                 error=str(
                     exc
                 ),
-
             )
 
-        # ==================================================
-        #
-        # Download Failed
-        #
-        # ==================================================
-
         if html is None:
-
             logger.warning(
                 "Crawl download returned None: "
                 f"url={normalized_url}"
             )
 
             return CrawlResult(
-
                 url=normalized_url,
-
                 resolved_url=resolved_url,
-
                 html=None,
-
                 content_hash=None,
-
                 article_id=None,
-
                 document_id=None,
-
                 resources={
                     "css": [],
                     "images": [],
                 },
-
                 success=False,
-
                 error=(
                     "Failed to download HTML"
                 ),
-
             )
-
-        # ==================================================
-        #
-        # Validate HTML
-        #
-        # ==================================================
 
         if not isinstance(
             html,
             str,
         ):
-
             logger.error(
                 "Crawler returned invalid HTML type: "
                 f"url={normalized_url}, "
@@ -1554,102 +1192,60 @@ class CrawlService:
             )
 
             return CrawlResult(
-
                 url=normalized_url,
-
                 resolved_url=resolved_url,
-
                 html=None,
-
                 content_hash=None,
-
                 article_id=None,
-
                 document_id=None,
-
                 resources={
                     "css": [],
                     "images": [],
                 },
-
                 success=False,
-
                 error=(
                     "Downloader must return "
                     "HTML string or None"
                 ),
-
             )
 
-        # ==================================================
-        #
-        # Empty HTML
-        #
-        # ==================================================
-
         if not html.strip():
-
             logger.warning(
                 "Downloaded HTML is empty: "
                 f"url={normalized_url}"
             )
 
             return CrawlResult(
-
                 url=normalized_url,
-
                 resolved_url=resolved_url,
-
                 html=None,
-
                 content_hash=None,
-
                 article_id=None,
-
                 document_id=None,
-
                 resources={
                     "css": [],
                     "images": [],
                 },
-
                 success=False,
-
                 error=(
                     "Downloaded HTML is empty"
                 ),
-
             )
 
-        # ==================================================
-        #
-        # Keyword Link Detection
-        #
-        # ==================================================
-
         if keyword:
-
             related_urls = (
                 self.detect_related_urls(
-
                     html=html,
-
                     keyword=keyword,
-
                     target_language=target_language,
-
                     base_url=(
-
                         resolved_url
                         or normalized_url
-
                     ),
-
                 )
             )
 
             if related_urls:
-
                 logger.info(
                     "Related URLs detected: "
                     f"url={normalized_url}, "
@@ -1658,33 +1254,18 @@ class CrawlService:
                 )
 
                 self._handle_related_urls(
-
                     related_urls,
-
                     keyword,
-
                 )
 
             else:
-
                 logger.info(
                     "No related URLs detected: "
                     f"url={normalized_url}, "
                     f"keyword={keyword}"
                 )
 
-        # ==================================================
-        #
-        # Original Crawl Flow Continues
-        #
-        # ==================================================
-
-        # --------------------------------------------------
-        # Generate Content Hash
-        # --------------------------------------------------
-
         try:
-
             content_hash = (
                 self.generate_content_hash(
                     html
@@ -1692,7 +1273,6 @@ class CrawlService:
             )
 
         except Exception as exc:
-
             logger.exception(
                 "Content hash generation failed: "
                 f"url={normalized_url}, "
@@ -1700,37 +1280,21 @@ class CrawlService:
             )
 
             return CrawlResult(
-
                 url=normalized_url,
-
                 resolved_url=resolved_url,
-
                 html=html,
-
                 content_hash=None,
-
                 article_id=None,
-
                 document_id=None,
-
                 resources={
                     "css": [],
                     "images": [],
                 },
-
                 success=False,
-
                 error=str(
                     exc
                 ),
-
             )
-
-        # ==================================================
-        #
-        # Resource Download
-        #
-        # ==================================================
 
         resources = {
             "css": [],
@@ -1738,23 +1302,14 @@ class CrawlService:
         }
 
         try:
-
             resources = (
                 self.resource_downloader(
-
                     html,
-
                     resolved_url,
-
                 )
             )
 
-            # --------------------------------------------------
-            # Resource Result Validation
-            # --------------------------------------------------
-
             if resources is None:
-
                 resources = {
                     "css": [],
                     "images": [],
@@ -1764,7 +1319,6 @@ class CrawlService:
                 resources,
                 dict,
             ):
-
                 logger.warning(
                     "Resource downloader returned "
                     "invalid result type: "
@@ -1778,13 +1332,11 @@ class CrawlService:
                 }
 
             else:
-
                 resources = {
                     "css": resources.get(
                         "css",
                         [],
                     ),
-
                     "images": resources.get(
                         "images",
                         [],
@@ -1792,7 +1344,6 @@ class CrawlService:
                 }
 
         except Exception as exc:
-
             logger.exception(
                 "Resource download failed: "
                 f"url={normalized_url}, "
@@ -1804,55 +1355,24 @@ class CrawlService:
                 "images": [],
             }
 
-        # ==================================================
-        #
-        # Create Crawl Result
-        #
-        # ==================================================
-
         result = CrawlResult(
-
             url=normalized_url,
-
             resolved_url=resolved_url,
-
             html=html,
-
             content_hash=content_hash,
-
-            # Crawl 階段尚未建立 Article
             article_id=None,
-
-            # Crawl 階段尚未建立 Document Identity
             document_id=None,
-
             resources=resources,
-
             success=True,
-
             error=None,
-
         )
 
-        # ==================================================
-        #
-        # Save Raw HTML
-        #
-        # ==================================================
-
         if self.save_raw_html:
-
             self._save_raw_html(
                 result
             )
 
         return result
-
-    # ==================================================
-    #
-    # Generate Content Hash
-    #
-    # ==================================================
 
     @staticmethod
     def generate_content_hash(
@@ -1867,7 +1387,6 @@ class CrawlService:
         """
 
         if html is None:
-
             raise ValueError(
                 "html cannot be None"
             )
@@ -1876,7 +1395,6 @@ class CrawlService:
             html,
             str,
         ):
-
             html = str(
                 html
             )
@@ -1886,12 +1404,6 @@ class CrawlService:
                 "utf-8"
             )
         ).hexdigest()
-
-    # ==================================================
-    #
-    # Save Raw HTML
-    #
-    # ==================================================
 
     def _save_raw_html(
         self,
@@ -1915,7 +1427,6 @@ class CrawlService:
             return None
 
         if self.raw_html_repository is None:
-
             logger.warning(
                 "Raw HTML repository is not configured."
             )
@@ -1927,27 +1438,15 @@ class CrawlService:
         )
 
         try:
-
-            # ==================================================
-            #
-            # Preferred API
-            #
-            # ==================================================
-
             save_crawl_result_method = getattr(
-
                 repository,
-
                 "save_crawl_result",
-
                 None,
-
             )
 
             if callable(
                 save_crawl_result_method
             ):
-
                 mongo_id = (
                     save_crawl_result_method(
                         crawl_result
@@ -1955,7 +1454,6 @@ class CrawlService:
                 )
 
                 if mongo_id:
-
                     logger.info(
                         "CrawlResult saved to "
                         "Raw HTML MongoDB: "
@@ -1964,7 +1462,6 @@ class CrawlService:
                     )
 
                 else:
-
                     logger.warning(
                         "Raw HTML repository "
                         "did not return MongoDB ID: "
@@ -1973,90 +1470,58 @@ class CrawlService:
 
                 return mongo_id
 
-            # ==================================================
-            #
-            # Compatibility API
-            #
-            # ==================================================
-
             save_raw_html_method = getattr(
-
                 repository,
-
                 "save_raw_html",
-
                 None,
-
             )
 
             if callable(
                 save_raw_html_method
             ):
-
                 return (
                     save_raw_html_method(
                         crawl_result
                     )
                 )
 
-            # ==================================================
-            #
-            # Generic save() Compatibility
-            #
-            # ==================================================
-
             save_method = getattr(
-
                 repository,
-
                 "save",
-
                 None,
-
             )
 
             if callable(
                 save_method
             ):
-
                 try:
-
                     return (
                         save_method(
-
                             url=(
                                 crawl_result.url
                             ),
-
                             html=(
                                 crawl_result.html
                             ),
-
                             content_hash=(
                                 crawl_result.content_hash
                             ),
-
                             resolved_url=(
                                 crawl_result.resolved_url
                             ),
-
                             article_id=(
                                 crawl_result.article_id
                             ),
-
                             document_id=(
                                 crawl_result.document_id
                             ),
-
                             resources=(
                                 crawl_result.resources
                             ),
-
                         )
                     )
 
                 except TypeError:
-
                     return (
                         save_method(
                             crawl_result
@@ -2070,7 +1535,6 @@ class CrawlService:
             )
 
         except Exception as exc:
-
             logger.exception(
                 "Raw HTML MongoDB save failed: "
                 f"url={crawl_result.url}, "
@@ -2078,12 +1542,6 @@ class CrawlService:
             )
 
             return None
-
-    # ==================================================
-    #
-    # Crawl Search Result
-    #
-    # ==================================================
 
     def crawl_result(
         self,
@@ -2110,7 +1568,6 @@ class CrawlService:
         """
 
         if search_result is None:
-
             raise ValueError(
                 "search_result cannot be None"
             )
@@ -2122,14 +1579,12 @@ class CrawlService:
         )
 
         if url is None:
-
             raise ValueError(
                 "search_result must "
                 "provide url"
             )
 
         if keyword is None:
-
             keyword = getattr(
                 search_result,
                 "keyword",
@@ -2137,7 +1592,6 @@ class CrawlService:
             )
 
         if target_language is None:
-
             target_language = getattr(
                 search_result,
                 "target_language",
@@ -2145,20 +1599,10 @@ class CrawlService:
             )
 
         return self.crawl(
-
             url,
-
             keyword=keyword,
-
             target_language=target_language,
-
         )
-
-    # ==================================================
-    #
-    # Crawl Target
-    #
-    # ==================================================
 
     def crawl_target(
         self,
@@ -2171,7 +1615,6 @@ class CrawlService:
         """
 
         if target is None:
-
             raise ValueError(
                 "target cannot be None"
             )
@@ -2183,13 +1626,11 @@ class CrawlService:
         )
 
         if url is None:
-
             raise ValueError(
                 "target must provide url"
             )
 
         if keyword is None:
-
             keyword = getattr(
                 target,
                 "keyword",
@@ -2197,7 +1638,6 @@ class CrawlService:
             )
 
         if target_language is None:
-
             target_language = getattr(
                 target,
                 "target_language",
@@ -2205,20 +1645,10 @@ class CrawlService:
             )
 
         return self.crawl(
-
             url,
-
             keyword=keyword,
-
             target_language=target_language,
-
         )
-
-    # ==================================================
-    #
-    # Crawl Many URLs
-    #
-    # ==================================================
 
     def crawl_many(
         self,
@@ -2231,54 +1661,36 @@ class CrawlService:
         """
 
         if urls is None:
-
             return []
 
         results = []
 
         for url in urls:
-
             try:
-
                 result = self.crawl(
-
                     url,
-
                     keyword=keyword,
-
                     target_language=target_language,
-
                 )
 
             except Exception as exc:
-
                 result = CrawlResult(
-
                     url=str(
                         url
                     ),
-
                     resolved_url=None,
-
                     html=None,
-
                     content_hash=None,
-
                     article_id=None,
-
                     document_id=None,
-
                     resources={
                         "css": [],
                         "images": [],
                     },
-
                     success=False,
-
                     error=str(
                         exc
                     ),
-
                 )
 
             results.append(
@@ -2286,12 +1698,6 @@ class CrawlService:
             )
 
         return results
-
-    # ==================================================
-    #
-    # Crawl Search Results
-    #
-    # ==================================================
 
     def crawl_search_results(
         self,
@@ -2328,66 +1734,44 @@ class CrawlService:
         """
 
         if search_results is None:
-
             return []
 
         results = []
 
         for search_result in search_results:
-
             try:
-
                 result = (
                     self.crawl_result(
-
                         search_result,
-
                         keyword=keyword,
-
                         target_language=target_language,
-
                     )
                 )
 
             except Exception as exc:
-
                 url = getattr(
-
                     search_result,
-
                     "url",
-
                     "",
-
                 )
 
                 result = CrawlResult(
-
                     url=str(
                         url
                     ),
-
                     resolved_url=None,
-
                     html=None,
-
                     content_hash=None,
-
                     article_id=None,
-
                     document_id=None,
-
                     resources={
                         "css": [],
                         "images": [],
                     },
-
                     success=False,
-
                     error=str(
                         exc
                     ),
-
                 )
 
             results.append(
@@ -2395,12 +1779,6 @@ class CrawlService:
             )
 
         return results
-
-    # ==================================================
-    #
-    # Normalize URL
-    #
-    # ==================================================
 
     @staticmethod
     def normalize_url(
@@ -2417,7 +1795,6 @@ class CrawlService:
         """
 
         if url is None:
-
             raise ValueError(
                 "url cannot be None"
             )
@@ -2427,18 +1804,11 @@ class CrawlService:
         ).strip()
 
         if not url:
-
             raise ValueError(
                 "url cannot be empty"
             )
 
         return url
-
-    # ==================================================
-    #
-    # Is Success
-    #
-    # ==================================================
 
     @staticmethod
     def is_success(
@@ -2452,7 +1822,6 @@ class CrawlService:
             crawl_result,
             CrawlResult,
         ):
-
             return False
 
         return (
@@ -2460,12 +1829,6 @@ class CrawlService:
             and crawl_result.has_html
             and crawl_result.has_hash
         )
-
-    # ==================================================
-    #
-    # Get HTML
-    #
-    # ==================================================
 
     @staticmethod
     def get_html(
@@ -2479,31 +1842,22 @@ class CrawlService:
             crawl_result,
             CrawlResult,
         ):
-
             raise TypeError(
                 "crawl_result must be "
                 "a CrawlResult"
             )
 
         if not crawl_result.success:
-
             raise ValueError(
                 "crawl did not succeed"
             )
 
         if crawl_result.html is None:
-
             raise ValueError(
                 "crawl result has no html"
             )
 
         return crawl_result.html
-
-    # ==================================================
-    #
-    # Get Content Hash
-    #
-    # ==================================================
 
     @staticmethod
     def get_content_hash(
@@ -2517,31 +1871,22 @@ class CrawlService:
             crawl_result,
             CrawlResult,
         ):
-
             raise TypeError(
                 "crawl_result must be "
                 "a CrawlResult"
             )
 
         if not crawl_result.success:
-
             raise ValueError(
                 "crawl did not succeed"
             )
 
         if not crawl_result.content_hash:
-
             raise ValueError(
                 "crawl result has no content_hash"
             )
 
         return crawl_result.content_hash
-
-    # ==================================================
-    #
-    # Get Resources
-    #
-    # ==================================================
 
     @staticmethod
     def get_resources(
@@ -2562,14 +1907,12 @@ class CrawlService:
             crawl_result,
             CrawlResult,
         ):
-
             raise TypeError(
                 "crawl_result must be "
                 "a CrawlResult"
             )
 
         if not crawl_result.success:
-
             raise ValueError(
                 "crawl did not succeed"
             )
@@ -2579,7 +1922,6 @@ class CrawlService:
         )
 
         if resources is None:
-
             return {
                 "css": [],
                 "images": [],
@@ -2588,22 +1930,10 @@ class CrawlService:
         return resources
 
 
-# ==================================================
-#
-# Default Service
-#
-# ==================================================
-
 default_crawl_service = (
     CrawlService()
 )
 
-
-# ==================================================
-#
-# Convenience API
-#
-# ==================================================
 
 def crawl(
     url,
@@ -2629,13 +1959,9 @@ def crawl(
 
     return (
         default_crawl_service.crawl(
-
             url,
-
             keyword=keyword,
-
             target_language=target_language,
-
         )
     )
 
@@ -2653,13 +1979,9 @@ def crawl_search_result(
     return (
         default_crawl_service
         .crawl_result(
-
             search_result,
-
             keyword=keyword,
-
             target_language=target_language,
-
         )
     )
 
@@ -2677,35 +1999,18 @@ def crawl_target(
     return (
         default_crawl_service
         .crawl_target(
-
             target,
-
             keyword=keyword,
-
             target_language=target_language,
-
         )
     )
 
 
-# ==================================================
-#
-# Public API
-#
-# ==================================================
-
 __all__ = [
-
     "CrawlResult",
-
     "CrawlService",
-
     "default_crawl_service",
-
     "crawl",
-
     "crawl_search_result",
-
     "crawl_target",
-
 ]

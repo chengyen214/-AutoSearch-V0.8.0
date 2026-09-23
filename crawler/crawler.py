@@ -39,15 +39,38 @@ Backward Compatibility：
         "images": []
     }
 
+Site Profile Integration：
+
+    URL
+        ↓
+    SiteProfileService
+        ↓
+    Site Profile
+        ↓
+    Best Strategy
+        ↓
+    R1 Retrieval
+
 注意：
 
     crawler.py 負責：
 
-        HTTP Download
+        Site Profile Integration
         Resource Extraction
-        Resource Download
+        Resource Metadata
         Resource Hash
+        Backward Compatibility
+
+    R1 負責：
+
+        HTML Retrieval
+        CSS Retrieval
+        Image Retrieval
         SSL fallback
+        Session
+        Referer
+        Cookie Session
+        Browser
 
     不負責：
 
@@ -84,6 +107,23 @@ from config.settings import (
     CRAWL_DELAY,
 )
 
+from crawler.retrieval.html_retrieval import (
+    retrieve_html,
+)
+
+from crawler.retrieval.css_retrieval import (
+    retrieve_css,
+)
+
+from crawler.retrieval.image_retrieval import (
+    retrieve_image,
+)
+
+from crawler.retrieval.site_profile_service import (
+    SiteProfileService,
+)
+
+
 DEFAULT_HEADERS = {
     "User-Agent":
     (
@@ -94,8 +134,9 @@ DEFAULT_HEADERS = {
         "Chrome/120 Safari/537.36"
     ),
     "Accept-Language":
-        "zh-TW,zh;q=0.9,en;q=0.8",
+    "zh-TW,zh;q=0.9,en;q=0.8",
 }
+
 
 _SSL_FALLBACK_HOSTS = set()
 
@@ -107,6 +148,7 @@ def _get_hostname(
     取得 URL Host，例如 https://www.nuk.edu.tw/ → www.nuk.edu.tw。
     若 URL 無法解析，回傳 None。
     """
+
     if not url:
         return None
 
@@ -114,6 +156,7 @@ def _get_hostname(
         hostname = urlparse(
             str(url)
         ).hostname
+
     except Exception:
         return None
 
@@ -129,6 +172,7 @@ def _is_ssl_fallback_host(
     """
     判斷 Host 是否已經進入 SSL fallback cache。
     """
+
     hostname = _get_hostname(
         url
     )
@@ -148,6 +192,7 @@ def _mark_ssl_fallback_host(
     """
     將 Host 加入 SSL fallback cache；只記錄 Host，不永久保存。
     """
+
     hostname = _get_hostname(
         url
     )
@@ -172,6 +217,7 @@ def _clear_ssl_fallback_cache():
     """
     清除 SSL fallback cache，主要提供測試與 Debug 使用。
     """
+
     _SSL_FALLBACK_HOSTS.clear()
 
 
@@ -179,8 +225,30 @@ def _disable_ssl_warning():
     """
     停用 urllib3 的 InsecureRequestWarning，只在 SSL fallback verify=False 時使用。
     """
+
     urllib3.disable_warnings(
         InsecureRequestWarning
+    )
+
+
+def _get_site_profile(
+    url,
+):
+    """
+    取得 URL 對應的 Site Profile。
+
+    SiteProfileService 會：
+
+        1. 根據 URL 建立 Site Identity
+        2. 使用 base_url 查詢 MongoDB
+        3. 已存在時直接回傳
+        4. 不存在時建立 Site Profile 並保存
+    """
+
+    service = SiteProfileService()
+
+    return service.get_or_create(
+        url
     )
 
 
@@ -190,6 +258,11 @@ def resolve_url(
 ):
     """
     取得真正新聞網址。
+
+    此函式保留原本 API。
+
+    R3 後主要 HTML 下載流程由 R1 Retrieval 處理 Redirect
+    與 SSL fallback。
 
     處理：
 
@@ -215,6 +288,7 @@ def resolve_url(
 
         最終 URL
     """
+
     if headers is None:
         headers = DEFAULT_HEADERS
 
@@ -298,6 +372,7 @@ def fix_encoding(
     """
     修正網站編碼，避免 UTF-8 → ISO-8859-1 → 中文亂碼。
     """
+
     encoding = response.apparent_encoding
 
     if encoding:
@@ -311,9 +386,12 @@ def _download_request(
     headers,
 ):
     """
-    HTTP Download；Host 已進入 SSL fallback cache 時使用 verify=False，否則使用 verify=True。
-    SSL 錯誤會交由上層進行 fallback。
+    保留原本 HTTP Download API。
+
+    R3 後實際 HTML/CSS/Image Retrieval
+    由 R1 Retrieval 模組負責。
     """
+
     verify_ssl = not _is_ssl_fallback_host(
         url
     )
@@ -338,8 +416,9 @@ def _download_ssl_fallback(
     headers,
 ):
     """
-    SSL Certificate Error fallback，使用 verify=False 並將 Host 加入 SSL fallback cache。
+    保留原本 SSL Certificate Error fallback API。
     """
+
     _mark_ssl_fallback_host(
         url
     )
@@ -372,6 +451,7 @@ def generate_resource_hash(
     """
     產生 Resource SHA-256，支援 bytes 與 str，回傳 64 字元 hexadecimal SHA-256。
     """
+
     if data is None:
         raise ValueError(
             "data cannot be None"
@@ -405,6 +485,7 @@ def normalize_resource_url(
     """
     將 HTML 中的 Resource URL 轉換成絕對 URL。
     """
+
     if not resource_url:
         return None
 
@@ -440,6 +521,7 @@ def extract_css_urls(
     從 HTML 擷取 CSS URL，主要處理 <link rel="stylesheet" href="...">。
     Returns: list[str]
     """
+
     if not html:
         return []
 
@@ -475,6 +557,7 @@ def extract_css_urls(
                 ).lower()
                 for value in rel
             ]
+
         else:
             rel_values = [
                 str(
@@ -514,6 +597,7 @@ def extract_image_urls(
     """
     從 HTML 擷取圖片 URL，支援 img src、data-src、data-original、data-lazy-src、data-image 與 srcset。
     """
+
     if not html:
         return []
 
@@ -602,10 +686,13 @@ def extract_image_urls(
 def download_css_resource(
     url,
     headers=None,
+    strategy="http",
 ):
     """
+    使用 Site Profile 指定的 CSS Retrieval Strategy
     下載單一 CSS Resource，失敗回傳 None。
     """
+
     if not url:
         return None
 
@@ -613,32 +700,12 @@ def download_css_resource(
         headers = DEFAULT_HEADERS
 
     try:
-        response = _download_request(
+        result = retrieve_css(
             url,
-            headers,
+            strategy=strategy,
         )
 
-    except requests.exceptions.SSLError:
-        try:
-            response = _download_ssl_fallback(
-                url,
-                headers,
-            )
-
-        except requests.RequestException as e:
-            print(
-                "CSS download failed:"
-            )
-
-            print(
-                f"URL: {url}"
-            )
-
-            print(e)
-
-            return None
-
-    except requests.RequestException as e:
+    except Exception as e:
         print(
             "CSS download failed:"
         )
@@ -651,33 +718,49 @@ def download_css_resource(
 
         return None
 
-    mime_type = response.headers.get(
-        "Content-Type",
-        "text/css",
+    if not result.success:
+        print(
+            "CSS download failed:"
+        )
+
+        print(
+            f"URL: {url}"
+        )
+
+        if result.error:
+            print(
+                result.error
+            )
+
+        return None
+
+    content = result.css
+
+    if not content:
+        return None
+
+    mime_type = (
+        result.content_type
+        or "text/css"
     )
 
     mime_type = mime_type.split(
         ";"
     )[0].strip()
 
-    try:
-        content = fix_encoding(
-            response
+    content_hash = (
+        result.content_hash
+        or generate_resource_hash(
+            content
         )
-
-    except Exception:
-        content = response.text
-
-    if not content:
-        return None
-
-    content_hash = generate_resource_hash(
-        content
     )
 
-    file_size = len(
-        content.encode(
-            "utf-8"
+    file_size = (
+        result.content_size
+        or len(
+            content.encode(
+                "utf-8"
+            )
         )
     )
 
@@ -687,7 +770,8 @@ def download_css_resource(
 
     return {
         "url":
-            url,
+            result.final_url
+            or url,
         "content":
             content,
         "content_hash":
@@ -702,10 +786,13 @@ def download_css_resource(
 def download_image_resource(
     url,
     headers=None,
+    strategy="http",
 ):
     """
-    下載單一 Image Resource，使用 bytes 保存，失敗回傳 None。
+    使用 Site Profile 指定的 Image Retrieval Strategy
+    下載單一 Image Resource，失敗回傳 None。
     """
+
     if not url:
         return None
 
@@ -713,32 +800,12 @@ def download_image_resource(
         headers = DEFAULT_HEADERS
 
     try:
-        response = _download_request(
+        result = retrieve_image(
             url,
-            headers,
+            strategy=strategy,
         )
 
-    except requests.exceptions.SSLError:
-        try:
-            response = _download_ssl_fallback(
-                url,
-                headers,
-            )
-
-        except requests.RequestException as e:
-            print(
-                "Image download failed:"
-            )
-
-            print(
-                f"URL: {url}"
-            )
-
-            print(e)
-
-            return None
-
-    except requests.RequestException as e:
+    except Exception as e:
         print(
             "Image download failed:"
         )
@@ -751,9 +818,25 @@ def download_image_resource(
 
         return None
 
-    mime_type = response.headers.get(
-        "Content-Type",
-        "",
+    if not result.success:
+        print(
+            "Image download failed:"
+        )
+
+        print(
+            f"URL: {url}"
+        )
+
+        if result.error:
+            print(
+                result.error
+            )
+
+        return None
+
+    mime_type = (
+        result.content_type
+        or ""
     )
 
     mime_type = mime_type.split(
@@ -777,17 +860,23 @@ def download_image_resource(
 
         return None
 
-    data = response.content
+    data = result.content
 
     if not data:
         return None
 
-    content_hash = generate_resource_hash(
-        data
+    content_hash = (
+        result.content_hash
+        or generate_resource_hash(
+            data
+        )
     )
 
-    file_size = len(
-        data
+    file_size = (
+        result.content_size
+        or len(
+            data
+        )
     )
 
     time.sleep(
@@ -796,7 +885,8 @@ def download_image_resource(
 
     return {
         "url":
-            url,
+            result.final_url
+            or url,
         "data":
             data,
         "content_hash":
@@ -814,8 +904,14 @@ def download_resources(
     headers=None,
 ):
     """
-    從 HTML 擷取並下載 CSS 與 Image Resources，計算 Hash 並建立 Resource Metadata；Resource 下載失敗不會讓 HTML Crawl 失敗。
+    從 HTML 擷取並下載 CSS 與 Image Resources。
+
+    CSS 與 Image 使用 Site Profile
+    各自指定的 Best Strategy。
+
+    Resource 下載失敗不會讓 HTML Crawl 失敗。
     """
+
     resources = {
         "css": [],
         "images": [],
@@ -830,6 +926,20 @@ def download_resources(
     if headers is None:
         headers = DEFAULT_HEADERS
 
+    profile = _get_site_profile(
+        base_url
+    )
+
+    css_strategy = (
+        profile.css_best_strategy
+        or "http"
+    )
+
+    image_strategy = (
+        profile.image_best_strategy
+        or "http"
+    )
+
     css_urls = extract_css_urls(
         html,
         base_url,
@@ -840,6 +950,7 @@ def download_resources(
             resource = download_css_resource(
                 css_url,
                 headers=headers,
+                strategy=css_strategy,
             )
 
             if resource is not None:
@@ -870,6 +981,7 @@ def download_resources(
             resource = download_image_resource(
                 image_url,
                 headers=headers,
+                strategy=image_strategy,
             )
 
             if resource is not None:
@@ -899,76 +1011,94 @@ def download(
     retry=3,
 ):
     """
-    下載 HTML，保持原本 API download(url) → HTML string；包含 Redirect、Normal HTTPS、SSL fallback、Retry，最終失敗回傳 None。
+    使用 Site Profile 的 HTML Best Strategy
+    下載 HTML。
+
+    保持原本 API：
+
+        download(url)
+            ↓
+        HTML string
+
+    R1 負責：
+
+        Redirect
+        Retry
+        SSL fallback
+        HTTP
+        Session
+        Referer
+        Cookie Session
+        Browser
     """
+
+    if not url:
+        return None
+
     if headers is None:
         headers = DEFAULT_HEADERS
 
-    url = resolve_url(
-        url,
-        headers,
+    try:
+        profile = _get_site_profile(
+            url
+        )
+
+    except Exception as e:
+        print(
+            "Site Profile lookup failed:"
+        )
+
+        print(e)
+
+        return None
+
+    strategy = (
+        profile.html_best_strategy
+        or "http"
+    )
+
+    print(
+        "Site Profile HTML Strategy: "
+        f"{strategy}"
     )
 
     for count in range(
         retry
     ):
         try:
-            try:
-                response = _download_request(
-                    url,
-                    headers,
-                )
-
-            except requests.exceptions.SSLError as ssl_error:
-                print(
-                    "SSL 憑證驗證失敗:"
-                )
-
-                print(
-                    ssl_error
-                )
-
-                print(
-                    "嘗試 SSL fallback..."
-                )
-
-                try:
-                    response = _download_ssl_fallback(
-                        url,
-                        headers,
-                    )
-
-                    print(
-                        "SSL fallback 成功"
-                    )
-
-                except requests.RequestException as fallback_error:
-                    print(
-                        "SSL fallback 失敗:"
-                    )
-
-                    print(
-                        fallback_error
-                    )
-
-                    raise fallback_error
-
-            content_type = response.headers.get(
-                "Content-Type",
-                "",
+            result = retrieve_html(
+                url,
+                strategy=strategy,
+                headers=headers,
+                retry=1,
             )
 
-            if "text/html" not in content_type.lower():
+            if not result.success:
                 print(
-                    "非HTML頁面:",
-                    content_type,
+                    f"HTML Retrieval failed "
+                    f"{count + 1}/{retry}"
+                )
+
+                if result.error:
+                    print(
+                        result.error
+                    )
+
+                if count < retry - 1:
+                    time.sleep(
+                        2
+                    )
+
+                continue
+
+            html = result.html
+
+            if not html:
+                print(
+                    "下載HTML為空"
                 )
 
                 return None
-
-            html = fix_encoding(
-                response
-            )
 
             if not html.strip():
                 print(
@@ -983,7 +1113,7 @@ def download(
 
             return html
 
-        except requests.RequestException as e:
+        except Exception as e:
             print(
                 f"下載失敗 "
                 f"{count + 1}/{retry}"
