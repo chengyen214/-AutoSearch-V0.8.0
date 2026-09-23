@@ -57,6 +57,10 @@ from playwright.sync_api import (
 import urllib3
 from requests.exceptions import SSLError
 
+from crawler.retrieval.retrieval_context import (
+    RetrievalContext,
+)
+
 
 DEFAULT_TIMEOUT = 15
 
@@ -161,15 +165,15 @@ def _is_image_signature(
         return False
 
     signatures = (
-        b"\xff\xd8\xff",        # JPEG
-        b"\x89PNG\r\n\x1a\n",  # PNG
-        b"GIF87a",              # GIF
-        b"GIF89a",              # GIF
-        b"RIFF",                # WebP
-        b"BM",                  # BMP
-        b"II*\x00",             # TIFF
-        b"MM\x00*",             # TIFF
-        b"\x00\x00\x01\x00",    # ICO
+        b"\xff\xd8\xff",
+        b"\x89PNG\r\n\x1a\n",
+        b"GIF87a",
+        b"GIF89a",
+        b"RIFF",
+        b"BM",
+        b"II*\x00",
+        b"MM\x00*",
+        b"\x00\x00\x01\x00",
     )
 
     if any(
@@ -425,10 +429,25 @@ def retrieve_image_http(
     url: str,
     *,
     timeout: int = DEFAULT_TIMEOUT,
+    retrieval_context: Optional[
+        RetrievalContext
+    ] = None,
 ) -> ImageRetrievalResult:
     """
     HTTP Image Retrieval。
     """
+
+    if retrieval_context is not None:
+        session = retrieval_context.get_session(
+            "http"
+        )
+
+        return _retrieve_request(
+            client=session,
+            url=url,
+            strategy="http",
+            timeout=timeout,
+        )
 
     with requests.Session() as session:
         return _retrieve_request(
@@ -443,6 +462,9 @@ def retrieve_image_session(
     url: str,
     *,
     timeout: int = DEFAULT_TIMEOUT,
+    retrieval_context: Optional[
+        RetrievalContext
+    ] = None,
 ) -> ImageRetrievalResult:
     """
     Session Image Retrieval。
@@ -451,6 +473,64 @@ def retrieve_image_session(
     start_time = time.perf_counter()
 
     try:
+        if retrieval_context is not None:
+            session = retrieval_context.get_session(
+                "session"
+            )
+
+            session.headers.update(
+                DEFAULT_HEADERS
+            )
+
+            response = session.get(
+                url,
+                timeout=timeout,
+                allow_redirects=True,
+            )
+
+            elapsed_time = (
+                time.perf_counter()
+                - start_time
+            )
+
+            content = response.content
+
+            if not _validate_image_response(
+                response
+            ):
+                return _build_result(
+                    success=False,
+                    strategy="session",
+                    url=url,
+                    response=response,
+                    content=content,
+                    elapsed_time=elapsed_time,
+                    error=(
+                        "Response is not a valid "
+                        "image resource"
+                    ),
+                )
+
+            if not content:
+                return _build_result(
+                    success=False,
+                    strategy="session",
+                    url=url,
+                    response=response,
+                    content=content,
+                    elapsed_time=elapsed_time,
+                    error="Image content is empty",
+                )
+
+            return _build_result(
+                success=True,
+                strategy="session",
+                url=url,
+                response=response,
+                content=content,
+                elapsed_time=elapsed_time,
+            )
+
         with requests.Session() as session:
             session.headers.update(
                 DEFAULT_HEADERS
@@ -525,6 +605,9 @@ def retrieve_image_referer(
     *,
     referer: Optional[str] = None,
     timeout: int = DEFAULT_TIMEOUT,
+    retrieval_context: Optional[
+        RetrievalContext
+    ] = None,
 ) -> ImageRetrievalResult:
     """
     Referer Image Retrieval。
@@ -538,8 +621,15 @@ def retrieve_image_referer(
             f"{parsed.netloc}/"
         )
 
+    if retrieval_context is not None:
+        client = retrieval_context.get_session(
+            "referer"
+        )
+    else:
+        client = requests
+
     return _retrieve_request(
-        client=requests,
+        client=client,
         url=url,
         strategy="referer",
         timeout=timeout,
@@ -555,6 +645,9 @@ def retrieve_image_cookie_session(
     cookies: Optional[Dict[str, str]] = None,
     referer: Optional[str] = None,
     timeout: int = DEFAULT_TIMEOUT,
+    retrieval_context: Optional[
+        RetrievalContext
+    ] = None,
 ) -> ImageRetrievalResult:
     """
     Cookie Session Image Retrieval。
@@ -566,6 +659,22 @@ def retrieve_image_cookie_session(
         referer = (
             f"{parsed.scheme}://"
             f"{parsed.netloc}/"
+        )
+
+    if retrieval_context is not None:
+        session = retrieval_context.get_session(
+            "cookie_session"
+        )
+
+        return _retrieve_request(
+            client=session,
+            url=url,
+            strategy="cookie_session",
+            timeout=timeout,
+            headers={
+                "Referer": referer,
+            },
+            cookies=cookies,
         )
 
     with requests.Session() as session:
@@ -585,10 +694,20 @@ def retrieve_image_ssl_fallback(
     url: str,
     *,
     timeout: int = DEFAULT_TIMEOUT,
+    retrieval_context: Optional[
+        RetrievalContext
+    ] = None,
 ) -> ImageRetrievalResult:
     """
     SSL Fallback Image Retrieval。
     """
+
+    if retrieval_context is not None:
+        client = retrieval_context.get_session(
+            "ssl_fallback"
+        )
+    else:
+        client = requests
 
     if _is_ssl_fallback_host(url):
         urllib3.disable_warnings(
@@ -596,7 +715,7 @@ def retrieve_image_ssl_fallback(
         )
 
         return _retrieve_request(
-            client=requests,
+            client=client,
             url=url,
             strategy="ssl_fallback",
             timeout=timeout,
@@ -604,7 +723,7 @@ def retrieve_image_ssl_fallback(
         )
 
     result = _retrieve_request(
-        client=requests,
+        client=client,
         url=url,
         strategy="ssl_fallback",
         timeout=timeout,
@@ -627,7 +746,7 @@ def retrieve_image_ssl_fallback(
         )
 
         return _retrieve_request(
-            client=requests,
+            client=client,
             url=url,
             strategy="ssl_fallback",
             timeout=timeout,

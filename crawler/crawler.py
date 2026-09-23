@@ -85,6 +85,10 @@ Site Profile Integration：
 import hashlib
 import time
 
+from concurrent.futures import (
+    ThreadPoolExecutor,
+)
+
 from urllib.parse import (
     urljoin,
     urlparse,
@@ -105,6 +109,8 @@ import urllib3
 from config.settings import (
     TIMEOUT,
     CRAWL_DELAY,
+    CSS_CONCURRENCY,
+    IMAGE_CONCURRENCY,
 )
 
 from crawler.retrieval.html_retrieval import (
@@ -117,6 +123,10 @@ from crawler.retrieval.css_retrieval import (
 
 from crawler.retrieval.image_retrieval import (
     retrieve_image,
+)
+
+from crawler.retrieval.retrieval_context import (
+    RetrievalContext,
 )
 
 from crawler.retrieval.site_profile_service import (
@@ -687,6 +697,7 @@ def download_css_resource(
     url,
     headers=None,
     strategy="http",
+    retrieval_context=None,
 ):
     """
     使用 Site Profile 指定的 CSS Retrieval Strategy
@@ -700,9 +711,21 @@ def download_css_resource(
         headers = DEFAULT_HEADERS
 
     try:
+        kwargs = {
+            "strategy": strategy,
+        }
+
+        if strategy != "browser":
+            if retrieval_context is not None:
+                kwargs["session"] = (
+                    retrieval_context.get_session(
+                        strategy
+                    )
+                )
+
         result = retrieve_css(
             url,
-            strategy=strategy,
+            **kwargs,
         )
 
     except Exception as e:
@@ -787,6 +810,7 @@ def download_image_resource(
     url,
     headers=None,
     strategy="http",
+    retrieval_context=None,
 ):
     """
     使用 Site Profile 指定的 Image Retrieval Strategy
@@ -800,10 +824,17 @@ def download_image_resource(
         headers = DEFAULT_HEADERS
 
     try:
-        result = retrieve_image(
-            url,
-            strategy=strategy,
-        )
+        if retrieval_context is None:
+            result = retrieve_image(
+                url,
+                strategy=strategy,
+            )
+        else:
+            result = retrieve_image(
+                url,
+                strategy=strategy,
+                retrieval_context=retrieval_context,
+            )
 
     except Exception as e:
         print(
@@ -898,6 +929,158 @@ def download_image_resource(
     }
 
 
+def _download_css_resources(
+    css_urls,
+    headers,
+    strategy,
+    retrieval_context=None,
+):
+    """
+    依 CSS_CONCURRENCY 下載 CSS Resources。
+    """
+
+    if not css_urls:
+        return []
+
+    concurrency = max(
+        1,
+        int(
+            CSS_CONCURRENCY
+        ),
+    )
+
+    def download_one(
+        css_url,
+    ):
+        try:
+            if retrieval_context is None:
+                return download_css_resource(
+                    css_url,
+                    headers=headers,
+                    strategy=strategy,
+                )
+
+            return download_css_resource(
+                css_url,
+                headers=headers,
+                strategy=strategy,
+                retrieval_context=retrieval_context,
+            )
+
+        except Exception as e:
+            print(
+                "CSS resource processing failed:"
+            )
+
+            print(
+                f"URL: {css_url}"
+            )
+
+            print(e)
+
+            return None
+
+    if concurrency == 1:
+        return [
+            download_one(
+                css_url
+            )
+            for css_url in css_urls
+        ]
+
+    with ThreadPoolExecutor(
+        max_workers=concurrency
+    ) as executor:
+        futures = [
+            executor.submit(
+                download_one,
+                css_url,
+            )
+            for css_url in css_urls
+        ]
+
+        return [
+            future.result()
+            for future in futures
+        ]
+
+
+def _download_image_resources(
+    image_urls,
+    headers,
+    strategy,
+    retrieval_context=None,
+):
+    """
+    依 IMAGE_CONCURRENCY 下載 Image Resources。
+    """
+
+    if not image_urls:
+        return []
+
+    concurrency = max(
+        1,
+        int(
+            IMAGE_CONCURRENCY
+        ),
+    )
+
+    def download_one(
+        image_url,
+    ):
+        try:
+            if retrieval_context is None:
+                return download_image_resource(
+                    image_url,
+                    headers=headers,
+                    strategy=strategy,
+                )
+
+            return download_image_resource(
+                image_url,
+                headers=headers,
+                strategy=strategy,
+                retrieval_context=retrieval_context,
+            )
+
+        except Exception as e:
+            print(
+                "Image resource processing failed:"
+            )
+
+            print(
+                f"URL: {image_url}"
+            )
+
+            print(e)
+
+            return None
+
+    if concurrency == 1:
+        return [
+            download_one(
+                image_url
+            )
+            for image_url in image_urls
+        ]
+
+    with ThreadPoolExecutor(
+        max_workers=concurrency
+    ) as executor:
+        futures = [
+            executor.submit(
+                download_one,
+                image_url,
+            )
+            for image_url in image_urls
+        ]
+
+        return [
+            future.result()
+            for future in futures
+        ]
+
+
 def download_resources(
     html,
     base_url,
@@ -910,6 +1093,9 @@ def download_resources(
     各自指定的 Best Strategy。
 
     Resource 下載失敗不會讓 HTML Crawl 失敗。
+
+    RetrievalContext 在整個 Resource Download
+    工作期間共用，讓同一 Worker 可以重複使用 Session。
     """
 
     resources = {
@@ -945,14 +1131,15 @@ def download_resources(
         base_url,
     )
 
-    for css_url in css_urls:
-        try:
-            resource = download_css_resource(
-                css_url,
-                headers=headers,
-                strategy=css_strategy,
-            )
+    with RetrievalContext() as retrieval_context:
+        css_results = _download_css_resources(
+            css_urls,
+            headers,
+            css_strategy,
+            retrieval_context,
+        )
 
+        for resource in css_results:
             if resource is not None:
                 resources[
                     "css"
@@ -960,47 +1147,25 @@ def download_resources(
                     resource
                 )
 
-        except Exception as e:
-            print(
-                "CSS resource processing failed:"
-            )
+        image_urls = extract_image_urls(
+            html,
+            base_url,
+        )
 
-            print(
-                f"URL: {css_url}"
-            )
+        image_results = _download_image_resources(
+            image_urls,
+            headers,
+            image_strategy,
+            retrieval_context,
+        )
 
-            print(e)
-
-    image_urls = extract_image_urls(
-        html,
-        base_url,
-    )
-
-    for image_url in image_urls:
-        try:
-            resource = download_image_resource(
-                image_url,
-                headers=headers,
-                strategy=image_strategy,
-            )
-
+        for resource in image_results:
             if resource is not None:
                 resources[
                     "images"
                 ].append(
                     resource
                 )
-
-        except Exception as e:
-            print(
-                "Image resource processing failed:"
-            )
-
-            print(
-                f"URL: {image_url}"
-            )
-
-            print(e)
 
     return resources
 
@@ -1028,7 +1193,7 @@ def download(
         HTTP
         Session
         Referer
-        Cookie Session
+        Cookie session
         Browser
     """
 

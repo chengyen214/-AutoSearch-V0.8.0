@@ -36,6 +36,13 @@ Job Executor Bridge
       ↓
     SQL / Archive / AI Task
 
+R4.2：
+
+    SearchResult[]
+      ↓
+    Crawler Concurrency
+      ↓
+    CrawlService
 
 重要：
 
@@ -56,78 +63,35 @@ Job Executor Bridge
     Search Pipeline 最後會提供完整 Status Summary。
 """
 
+from concurrent.futures import ThreadPoolExecutor
 
-# ==================================================
-#
-# Target Source Service
-#
-# ==================================================
+from config.settings import (
+    CRAWLER_CONCURRENCY,
+)
 
 from services.target_source_service import (
     TargetSourceService,
 )
 
-
-# ==================================================
-#
-# Source Resolution Bridge
-#
-# ==================================================
-
 from services.source_resolution_bridge import (
     SourceResolutionBridge,
 )
-
-
-# ==================================================
-#
-# Search Execution Bridge
-#
-# ==================================================
 
 from services.search_execution_bridge import (
     SearchExecutionBridge,
 )
 
-
-# ==================================================
-#
-# Crawl Service
-#
-# ==================================================
-
 from services.crawl_service import (
     CrawlService,
 )
-
-
-# ==================================================
-#
-# Parser Service
-#
-# ==================================================
 
 from services.parser_service import (
     ParserService,
 )
 
-
-# ==================================================
-#
-# Article Service
-#
-# ==================================================
-
 from services.article_service import (
     ArticleService,
 )
-
-
-# ==================================================
-#
-# Logger
-#
-# ==================================================
 
 from utils.logger import (
     logger,
@@ -198,12 +162,6 @@ class JobExecutorBridge:
             "ArticleService"
         )
 
-    # ==================================================
-    #
-    # Execute
-    #
-    # ==================================================
-
     def execute(
         self,
         job,
@@ -262,21 +220,11 @@ class JobExecutorBridge:
             "a direct URL nor a search source"
         )
 
-    # ==================================================
-    #
-    # Direct URL Pipeline
-    #
-    # ==================================================
-
     def _execute_direct_url_pipeline(
         self,
         target,
         context,
     ):
-
-        # ----------------------------------------------
-        # Crawl
-        # ----------------------------------------------
 
         try:
 
@@ -314,10 +262,6 @@ class JobExecutorBridge:
             crawl_result
         ]
 
-        # ----------------------------------------------
-        # Crawl failed
-        # ----------------------------------------------
-
         if crawl_result is None:
 
             logger.warning(
@@ -338,10 +282,6 @@ class JobExecutorBridge:
             ]
 
             return context
-
-        # ----------------------------------------------
-        # Parser
-        # ----------------------------------------------
 
         keyword = self._get_keyword(target)
 
@@ -383,10 +323,6 @@ class JobExecutorBridge:
             parser_result
         ]
 
-        # ----------------------------------------------
-        # ArticleService
-        # ----------------------------------------------
-
         article_result = (
             self._persist_parser_result(
                 parser_result=parser_result,
@@ -405,22 +341,12 @@ class JobExecutorBridge:
 
         return context
 
-    # ==================================================
-    #
-    # Search Pipeline
-    #
-    # ==================================================
-
     def _execute_search_pipeline(
         self,
         target,
         resolved_source,
         context,
     ):
-
-        # ----------------------------------------------
-        # Search
-        # ----------------------------------------------
 
         search_results = (
             self.search_execution_bridge.execute(
@@ -441,19 +367,7 @@ class JobExecutorBridge:
 
         keyword = self._get_keyword(target)
 
-        crawl_results = []
-        parser_results = []
-        article_results = []
-
-        # ----------------------------------------------
-        # Status Counter
-        #
-        # IMPORTANT:
-        #
-        # X/20 only代表目前處理到第幾筆。
-        # 真正成功 / duplicate / failed 必須另外統計。
-        #
-        # ----------------------------------------------
+        total = len(search_results)
 
         status_counts = {
             "success": 0,
@@ -467,60 +381,26 @@ class JobExecutorBridge:
             "other": 0,
         }
 
-        # ----------------------------------------------
-        # Process SearchResult One By One
-        # ----------------------------------------------
+        crawl_results = self._crawl_search_results(
+            search_results
+        )
+
+        parser_results = []
+        article_results = []
 
         for index, search_result in enumerate(
             search_results,
             start=1,
         ):
 
-            total = len(search_results)
-
             logger.info(
                 "Processing SearchResult "
                 f"{index}/{total}"
             )
 
-            # ==========================================
-            #
-            # Crawl
-            #
-            # ==========================================
-
-            try:
-
-                crawl_result = (
-                    self.crawl_service
-                    .crawl_result(
-                        search_result
-                    )
-                )
-
-            except Exception as e:
-
-                logger.exception(
-                    "Crawl failed for SearchResult "
-                    f"{index}/{total}: "
-                    f"{e}"
-                )
-
-                crawl_result = None
-
-            crawl_results.append(
-                crawl_result
+            crawl_result = (
+                crawl_results[index - 1]
             )
-
-            # ==========================================
-            #
-            # Crawl Failure
-            #
-            # IMPORTANT
-            #
-            # Crawl 失敗不能中斷整批 Search。
-            #
-            # ==========================================
 
             if crawl_result is None:
 
@@ -558,12 +438,6 @@ class JobExecutorBridge:
 
                 continue
 
-            # ==========================================
-            #
-            # Parser
-            #
-            # ==========================================
-
             try:
 
                 parser_result = (
@@ -587,12 +461,6 @@ class JobExecutorBridge:
             parser_results.append(
                 parser_result
             )
-
-            # ==========================================
-            #
-            # Parser Failure
-            #
-            # ==========================================
 
             if parser_result is None:
 
@@ -626,12 +494,6 @@ class JobExecutorBridge:
 
                 continue
 
-            # ==========================================
-            #
-            # ArticleService
-            #
-            # ==========================================
-
             article_result = (
                 self._persist_parser_result(
                     parser_result=parser_result,
@@ -642,12 +504,6 @@ class JobExecutorBridge:
             article_results.append(
                 article_result
             )
-
-            # ==========================================
-            #
-            # Determine Final Status
-            #
-            # ==========================================
 
             status = self._normalize_article_status(
                 article_result
@@ -692,10 +548,6 @@ class JobExecutorBridge:
                 f"status={status.upper()}"
             )
 
-        # ----------------------------------------------
-        # Store Results
-        # ----------------------------------------------
-
         context["crawl_results"] = (
             crawl_results
         )
@@ -708,17 +560,9 @@ class JobExecutorBridge:
             article_results
         )
 
-        # ----------------------------------------------
-        # Store Status Summary
-        # ----------------------------------------------
-
         context["status_summary"] = (
             status_counts
         )
-
-        # ----------------------------------------------
-        # Final Search Pipeline Summary
-        # ----------------------------------------------
 
         logger.info(
             "Search Pipeline Result Summary: "
@@ -744,11 +588,108 @@ class JobExecutorBridge:
 
         return context
 
-    # ==================================================
-    #
-    # Persist Parser Result
-    #
-    # ==================================================
+    def _crawl_search_results(
+        self,
+        search_results,
+    ):
+
+        total = len(search_results)
+
+        if total == 0:
+            return []
+
+        concurrency = int(
+            CRAWLER_CONCURRENCY
+        )
+
+        if concurrency < 1:
+            concurrency = 1
+
+        logger.info(
+            "Crawler Concurrency: "
+            f"{concurrency}"
+        )
+
+        if concurrency == 1:
+
+            crawl_results = []
+
+            for index, search_result in enumerate(
+                search_results,
+                start=1,
+            ):
+
+                crawl_results.append(
+                    self._crawl_search_result(
+                        search_result=search_result,
+                        index=index,
+                        total=total,
+                    )
+                )
+
+            return crawl_results
+
+        with ThreadPoolExecutor(
+            max_workers=concurrency
+        ) as executor:
+
+            futures = [
+                executor.submit(
+                    self._crawl_search_result,
+                    search_result,
+                    index,
+                    total,
+                )
+                for index, search_result in enumerate(
+                    search_results,
+                    start=1,
+                )
+            ]
+
+            return [
+                future.result()
+                for future in futures
+            ]
+
+    def _crawl_search_result(
+        self,
+        search_result,
+        index,
+        total,
+    ):
+
+        logger.info(
+            "Crawling SearchResult "
+            f"{index}/{total} | "
+            f"url={self._get_search_result_url(search_result)}"
+        )
+
+        try:
+
+            crawl_result = (
+                self.crawl_service
+                .crawl_result(
+                    search_result
+                )
+            )
+
+            logger.info(
+                "Crawl completed for SearchResult "
+                f"{index}/{total} | "
+                f"url={self._get_search_result_url(search_result)}"
+            )
+
+            return crawl_result
+
+        except Exception as e:
+
+            logger.exception(
+                "Crawl failed for SearchResult "
+                f"{index}/{total}: "
+                f"{e}"
+            )
+
+            return None
 
     def _persist_parser_result(
         self,
@@ -846,40 +787,10 @@ class JobExecutorBridge:
                 "error": str(e),
             }
 
-    # ==================================================
-    #
-    # Normalize Article Status
-    #
-    # ==================================================
-
     @staticmethod
     def _normalize_article_status(
         article_result,
     ):
-        """
-        將 ArticleService 回傳狀態
-        統一成 Search Pipeline 可以統計的 status。
-
-        例如：
-
-            created
-                -> success
-
-            success
-                -> success
-
-            updated
-                -> updated
-
-            duplicate
-                -> duplicate
-
-            crawl_failed
-                -> crawl_failed
-
-            parser_failed
-                -> parser_failed
-        """
 
         if not isinstance(
             article_result,
@@ -899,10 +810,6 @@ class JobExecutorBridge:
             status
         ).strip().lower()
 
-        # ----------------------------------------------
-        # New Article
-        # ----------------------------------------------
-
         if status in (
             "created",
             "success",
@@ -912,20 +819,12 @@ class JobExecutorBridge:
 
             return "success"
 
-        # ----------------------------------------------
-        # Existing Article Updated
-        # ----------------------------------------------
-
         if status in (
             "updated",
             "update",
         ):
 
             return "updated"
-
-        # ----------------------------------------------
-        # Duplicate
-        # ----------------------------------------------
 
         if status in (
             "duplicate",
@@ -934,10 +833,6 @@ class JobExecutorBridge:
         ):
 
             return "duplicate"
-
-        # ----------------------------------------------
-        # Known Failure
-        # ----------------------------------------------
 
         if status in (
             "crawl_failed",
@@ -971,26 +866,10 @@ class JobExecutorBridge:
 
         return "other"
 
-    # ==================================================
-    #
-    # Get SearchResult URL
-    #
-    # ==================================================
-
     @staticmethod
     def _get_search_result_url(
         search_result,
     ):
-        """
-        從 SearchResult 取得 URL。
-
-        支援：
-
-            dict
-            object.url
-            object.resolved_url
-            object.link
-        """
 
         if search_result is None:
             return None
@@ -1041,12 +920,6 @@ class JobExecutorBridge:
 
         return None
 
-    # ==================================================
-    #
-    # Execute Search And Crawl
-    #
-    # ==================================================
-
     def execute_search_and_crawl(
         self,
         target,
@@ -1071,7 +944,10 @@ class JobExecutorBridge:
 
         keyword = self._get_keyword(target)
 
-        crawl_results = []
+        crawl_results = self._crawl_search_results(
+            search_results
+        )
+
         parser_results = []
         article_results = []
 
@@ -1087,47 +963,21 @@ class JobExecutorBridge:
             "other": 0,
         }
 
+        total = len(search_results)
+
         for index, search_result in enumerate(
             search_results,
             start=1,
         ):
-
-            total = len(search_results)
 
             logger.info(
                 "execute_search_and_crawl: "
                 f"processing {index}/{total}"
             )
 
-            # ==========================================
-            # Crawl
-            # ==========================================
-
-            try:
-
-                crawl_result = (
-                    self.crawl_service
-                    .crawl_result(
-                        search_result
-                    )
-                )
-
-            except Exception as e:
-
-                logger.exception(
-                    "execute_search_and_crawl crawl failed: "
-                    f"{e}"
-                )
-
-                crawl_result = None
-
-            crawl_results.append(
-                crawl_result
+            crawl_result = (
+                crawl_results[index - 1]
             )
-
-            # ==========================================
-            # Crawl Failure
-            # ==========================================
 
             if crawl_result is None:
 
@@ -1159,10 +1009,6 @@ class JobExecutorBridge:
 
                 continue
 
-            # ==========================================
-            # Parser
-            # ==========================================
-
             try:
 
                 parser_result = (
@@ -1185,10 +1031,6 @@ class JobExecutorBridge:
             parser_results.append(
                 parser_result
             )
-
-            # ==========================================
-            # Parser Failure
-            # ==========================================
 
             if parser_result is None:
 
@@ -1216,10 +1058,6 @@ class JobExecutorBridge:
 
                 continue
 
-            # ==========================================
-            # ArticleService
-            # ==========================================
-
             article_result = (
                 self._persist_parser_result(
                     parser_result=parser_result,
@@ -1236,10 +1074,13 @@ class JobExecutorBridge:
             )
 
             if status in status_counts:
+
                 status_counts[
                     status
                 ] += 1
+
             else:
+
                 status_counts[
                     "other"
                 ] += 1
@@ -1279,12 +1120,6 @@ class JobExecutorBridge:
             "status_summary":
                 status_counts,
         }
-
-    # ==================================================
-    #
-    # Execute Crawl
-    #
-    # ==================================================
 
     def execute_crawl(
         self,
@@ -1391,12 +1226,6 @@ class JobExecutorBridge:
                 article_result,
         }
 
-    # ==================================================
-    #
-    # Extract Article
-    #
-    # ==================================================
-
     @staticmethod
     def _extract_article(
         parser_result,
@@ -1455,12 +1284,6 @@ class JobExecutorBridge:
 
         return None
 
-    # ==================================================
-    #
-    # Extract HTML
-    #
-    # ==================================================
-
     @staticmethod
     def _extract_html(
         crawl_result,
@@ -1509,12 +1332,6 @@ class JobExecutorBridge:
 
         return None
 
-    # ==================================================
-    #
-    # Resolve Source
-    #
-    # ==================================================
-
     def resolve_source(
         self,
         target,
@@ -1527,12 +1344,6 @@ class JobExecutorBridge:
                 target
             )
         )
-
-    # ==================================================
-    #
-    # Resolve Resolved Source
-    #
-    # ==================================================
 
     def resolve_resolved_source(
         self,
@@ -1553,12 +1364,6 @@ class JobExecutorBridge:
             )
         )
 
-    # ==================================================
-    #
-    # Resolve Source Definition
-    #
-    # ==================================================
-
     def resolve_source_definition(
         self,
         source_definition,
@@ -1569,12 +1374,6 @@ class JobExecutorBridge:
                 source_definition
             )
         )
-
-    # ==================================================
-    #
-    # Execute Search
-    #
-    # ==================================================
 
     def execute_search(
         self,
@@ -1606,12 +1405,6 @@ class JobExecutorBridge:
             )
         )
 
-    # ==================================================
-    #
-    # Is Direct URL
-    #
-    # ==================================================
-
     def is_direct_url(
         self,
         target,
@@ -1631,12 +1424,6 @@ class JobExecutorBridge:
                 source_definition
             )
         )
-
-    # ==================================================
-    #
-    # Is Search
-    #
-    # ==================================================
 
     def is_search(
         self,
@@ -1658,12 +1445,6 @@ class JobExecutorBridge:
             )
         )
 
-    # ==================================================
-    #
-    # Get Provider
-    #
-    # ==================================================
-
     def get_provider(
         self,
         target,
@@ -1677,12 +1458,6 @@ class JobExecutorBridge:
                 target
             )
         )
-
-    # ==================================================
-    #
-    # Get Resolved Provider
-    #
-    # ==================================================
 
     def get_resolved_provider(
         self,
@@ -1711,12 +1486,6 @@ class JobExecutorBridge:
             )
         )
 
-    # ==================================================
-    #
-    # Get Resolved Adapter
-    #
-    # ==================================================
-
     def get_resolved_adapter(
         self,
         target,
@@ -1743,12 +1512,6 @@ class JobExecutorBridge:
                 resolved_source
             )
         )
-
-    # ==================================================
-    #
-    # Get Resolved Search Source
-    #
-    # ==================================================
 
     def get_resolved_search_source(
         self,
@@ -1777,12 +1540,6 @@ class JobExecutorBridge:
             )
         )
 
-    # ==================================================
-    #
-    # Is Supported Provider
-    #
-    # ==================================================
-
     def is_supported_provider(
         self,
         provider,
@@ -1794,12 +1551,6 @@ class JobExecutorBridge:
                 provider
             )
         )
-
-    # ==================================================
-    #
-    # Get Keyword
-    #
-    # ==================================================
 
     @staticmethod
     def _get_keyword(
@@ -1847,12 +1598,6 @@ class JobExecutorBridge:
             "target must contain a non-empty keyword"
         )
 
-    # ==================================================
-    #
-    # Validation
-    #
-    # ==================================================
-
     @staticmethod
     def _validate_target(
         target,
@@ -1895,22 +1640,10 @@ class JobExecutorBridge:
         return True
 
 
-# ==================================================
-#
-# Default Bridge
-#
-# ==================================================
-
 default_job_executor_bridge = (
     JobExecutorBridge()
 )
 
-
-# ==================================================
-#
-# Convenience Function
-#
-# ==================================================
 
 def execute_job(
     job,
@@ -1924,12 +1657,6 @@ def execute_job(
         )
     )
 
-
-# ==================================================
-#
-# Public API
-#
-# ==================================================
 
 __all__ = [
     "JobExecutorBridge",
