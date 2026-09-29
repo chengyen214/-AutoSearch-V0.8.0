@@ -93,7 +93,6 @@ Metadata Mapping：
     8. LLM
 """
 
-
 from langchain_core.documents import Document
 
 
@@ -113,10 +112,6 @@ class ArticleDocument:
         5. 將 Article 欄位映射到 Document metadata
     """
 
-    # ==================================================
-    # Required Fields
-    # ==================================================
-
     REQUIRED_FIELDS = (
         "document_id",
         "title",
@@ -124,30 +119,19 @@ class ArticleDocument:
         "content",
     )
 
-    # ==================================================
-    # RAG Metadata Fields
-    # ==================================================
-
     METADATA_FIELDS = (
-        # Core Article Metadata
         "document_id",
         "title",
         "url",
         "keyword",
         "source",
         "crawl_time",
-
-        # AI Knowledge Metadata
         "ai_summary",
         "ai_category",
         "ai_keywords",
         "ai_importance",
         "ai_confidence",
     )
-
-    # ==================================================
-    # Convert
-    # ==================================================
 
     @classmethod
     def from_article(
@@ -173,10 +157,6 @@ class ArticleDocument:
                 Article 不是 dict。
         """
 
-        # ----------------------------------------------
-        # Validate Article
-        # ----------------------------------------------
-
         if article is None:
             raise ValueError(
                 "Article cannot be None."
@@ -190,12 +170,7 @@ class ArticleDocument:
                 "Article must be a dict."
             )
 
-        # ----------------------------------------------
-        # Validate Required Fields
-        # ----------------------------------------------
-
         for field in cls.REQUIRED_FIELDS:
-
             value = article.get(
                 field
             )
@@ -210,103 +185,50 @@ class ArticleDocument:
                 value,
                 str
             ) and not value.strip():
-
                 raise ValueError(
                     f"Article field "
                     f"'{field}' is empty."
                 )
 
-        # ----------------------------------------------
-        # Page Content
-        # ----------------------------------------------
-
         page_content = str(
             article["content"]
         )
 
-        # ----------------------------------------------
-        # RAG Metadata
-        # ----------------------------------------------
-        #
-        # Core Article Metadata：
-        #
-        #   document_id
-        #   title
-        #   url
-        #   keyword
-        #   source
-        #   crawl_time
-        #
-        # AI Knowledge Metadata：
-        #
-        #   ai_summary
-        #   ai_category
-        #   ai_keywords
-        #   ai_importance
-        #   ai_confidence
-        #
-        # RAG Metadata 直接保留
-        # AutoSearch Article 的原始 AI 欄位名稱，
-        # 避免不必要的欄位轉換與資訊遺失。
-        # ----------------------------------------------
-
         metadata = {
-            # ------------------------------------------
-            # Core Article Metadata
-            # ------------------------------------------
-
             "document_id": article[
                 "document_id"
             ],
-
             "title": article[
                 "title"
             ],
-
             "url": article[
                 "url"
             ],
-
             "keyword": article.get(
                 "keyword"
             ),
-
             "source": article.get(
                 "source"
             ),
-
             "crawl_time": article.get(
                 "crawl_time"
             ),
-
-            # ------------------------------------------
-            # AI Knowledge Metadata
-            # ------------------------------------------
-
             "ai_summary": article.get(
                 "ai_summary"
             ),
-
             "ai_category": article.get(
                 "ai_category"
             ),
-
             "ai_keywords": article.get(
                 "ai_keywords"
             ),
-
             "ai_importance": article.get(
                 "ai_importance"
             ),
-
             "ai_confidence": article.get(
                 "ai_confidence"
             ),
         }
-
-        # ----------------------------------------------
-        # Create Document
-        # ----------------------------------------------
 
         return Document(
             page_content=page_content,

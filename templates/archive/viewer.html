@@ -17,10 +17,6 @@
 
     <style>
 
-        /* ==================================================
-           Global
-        ================================================== */
-
         * {
             box-sizing: border-box;
         }
@@ -40,20 +36,12 @@
             color: #222;
         }
 
-        /* ==================================================
-           Main Container
-        ================================================== */
-
         .container {
             width: 100%;
             max-width: 1400px;
             margin: 0 auto;
             padding: 24px;
         }
-
-        /* ==================================================
-           Archive Header
-        ================================================== */
 
         .header {
             background: #ffffff;
@@ -69,10 +57,6 @@
             font-weight: 600;
             color: #222;
         }
-
-        /* ==================================================
-           Original URL
-        ================================================== */
 
         .url-section {
             margin-bottom: 20px;
@@ -107,10 +91,6 @@
             text-decoration: underline;
         }
 
-        /* ==================================================
-           Snapshot History
-        ================================================== */
-
         .history-section {
             margin-top: 20px;
         }
@@ -127,10 +107,6 @@
             flex-wrap: wrap;
             gap: 8px;
         }
-
-        /* ==================================================
-           Snapshot Button
-        ================================================== */
 
         .snapshot {
             display: inline-flex;
@@ -179,10 +155,6 @@
             white-space: nowrap;
         }
 
-        /* ==================================================
-           No Snapshots
-        ================================================== */
-
         .no-snapshots {
             padding: 18px;
             border: 1px solid #ddd;
@@ -193,20 +165,13 @@
             line-height: 1.7;
         }
 
-        /* ==================================================
-           Viewer
-        ================================================== */
-
         .viewer {
             background: #ffffff;
             border: 1px solid #ddd;
             border-radius: 10px;
             overflow: hidden;
+            margin-bottom: 20px;
         }
-
-        /* ==================================================
-           Viewer Header
-        ================================================== */
 
         .viewer-header {
             display: flex;
@@ -229,19 +194,11 @@
             font-weight: 500;
         }
 
-        /* ==================================================
-           Viewer Body
-        ================================================== */
-
         .viewer-body {
             width: 100%;
             min-height: 700px;
             background: #ffffff;
         }
-
-        /* ==================================================
-           Archived HTML Frame
-        ================================================== */
 
         .html-frame {
             display: block;
@@ -250,10 +207,6 @@
             border: 0;
             background: #ffffff;
         }
-
-        /* ==================================================
-           Empty Viewer
-        ================================================== */
 
         .viewer-empty {
             display: flex;
@@ -283,10 +236,6 @@
             color: #888;
         }
 
-        /* ==================================================
-           Error
-        ================================================== */
-
         .error {
             padding: 18px;
             border: 1px solid #e0b4b4;
@@ -296,9 +245,169 @@
             line-height: 1.6;
         }
 
-        /* ==================================================
-           Responsive
-        ================================================== */
+        .archive-chat {
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .archive-chat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 14px 20px;
+            border-bottom: 1px solid #ddd;
+            background: #fafafa;
+        }
+
+        .archive-chat-title {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .archive-chat-status {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .archive-chat-messages {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-height: 180px;
+            max-height: 520px;
+            overflow-y: auto;
+            padding: 18px 20px;
+            background: #f8f9fb;
+        }
+
+        .chat-message {
+            max-width: 85%;
+            padding: 11px 14px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .chat-message.user {
+            align-self: flex-end;
+            background: #e9efff;
+            border: 1px solid #cdd9fa;
+            color: #222;
+        }
+
+        .chat-message.assistant {
+            align-self: flex-start;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            color: #222;
+        }
+
+        .chat-message.system {
+            align-self: center;
+            max-width: 100%;
+            background: transparent;
+            color: #777;
+            font-size: 13px;
+            text-align: center;
+        }
+
+        .chat-sources {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #e1e1e1;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .chat-sources-title {
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .chat-source {
+            margin-top: 4px;
+            word-break: break-all;
+        }
+
+        .chat-source a {
+            color: #2563eb;
+            text-decoration: none;
+        }
+
+        .chat-source a:hover {
+            text-decoration: underline;
+        }
+
+        .chat-snapshot-info {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #777;
+        }
+
+        .archive-chat-input-area {
+            display: flex;
+            gap: 10px;
+            padding: 14px 20px;
+            border-top: 1px solid #ddd;
+            background: #ffffff;
+        }
+
+        .archive-chat-input {
+            flex: 1;
+            min-width: 0;
+            min-height: 44px;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            resize: vertical;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.5;
+            outline: none;
+        }
+
+        .archive-chat-input:focus {
+            border-color: #5276d7;
+        }
+
+        .archive-chat-send {
+            flex: 0 0 auto;
+            min-width: 80px;
+            min-height: 44px;
+            padding: 10px 16px;
+            border: 1px solid #5276d7;
+            border-radius: 6px;
+            background: #5276d7;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .archive-chat-send:hover:not(:disabled) {
+            background: #4568c5;
+        }
+
+        .archive-chat-send:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .archive-chat-context {
+            padding: 10px 20px;
+            border-top: 1px solid #eee;
+            background: #fafafa;
+            font-size: 12px;
+            color: #666;
+            line-height: 1.5;
+        }
 
         @media (max-width: 768px) {
 
@@ -336,6 +445,34 @@
                 padding: 12px 15px;
                 font-size: 15px;
             }
+
+            .archive-chat-header {
+                padding: 12px 15px;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .archive-chat-messages {
+                max-height: 450px;
+                padding: 15px;
+            }
+
+            .chat-message {
+                max-width: 95%;
+            }
+
+            .archive-chat-input-area {
+                flex-direction: column;
+                padding: 12px 15px;
+            }
+
+            .archive-chat-send {
+                width: 100%;
+            }
+
+            .archive-chat-context {
+                padding: 10px 15px;
+            }
         }
 
     </style>
@@ -346,19 +483,11 @@
 
 <div class="container">
 
-    <!-- ==================================================
-         Archive Header
-    ================================================== -->
-
     <section class="header">
 
         <h1>
             {{ title or "Article Archive" }}
         </h1>
-
-        <!-- ==================================================
-             Original URL
-        ================================================== -->
 
         <div class="url-section">
 
@@ -388,31 +517,11 @@
 
         </div>
 
-
-        <!-- ==================================================
-             Snapshot History
-
-             archive_viewer.py：
-
-                 versions = [
-                     {
-                         "version": "...",
-                         "created_at": "...",
-                         "view_url": "/archive/view?..."
-                     }
-                 ]
-
-             versions 已經按照 created_at DESC 排序。
-
-             loop.first = 最新 Snapshot
-        ================================================== -->
-
         <div class="history-section">
 
             <div class="history-title">
                 歷史版本
             </div>
-
 
             {% if versions %}
 
@@ -421,11 +530,8 @@
                     {% for item in versions %}
 
                         {% set version_value = item.get("version") %}
-
                         {% set created_at = item.get("created_at") %}
-
                         {% set view_url = item.get("view_url") %}
-
 
                         {% if view_url %}
 
@@ -449,7 +555,6 @@
 
                                 </span>
 
-
                                 <span class="snapshot-date">
 
                                     {% if created_at %}
@@ -468,7 +573,6 @@
 
                                 </span>
 
-
                                 {% if loop.first %}
 
                                     <span class="latest">
@@ -484,7 +588,6 @@
                     {% endfor %}
 
                 </div>
-
 
             {% else %}
 
@@ -504,33 +607,7 @@
 
     </section>
 
-
-    <!-- ==================================================
-         Viewer
-    ================================================== -->
-
     <section class="viewer">
-
-
-        <!-- ==================================================
-             Viewer Header
-
-             初次進入：
-
-                 selected_version = None
-
-             顯示：
-
-                 網頁內容
-
-             選擇 Snapshot：
-
-                 selected_version != None
-
-             顯示：
-
-                 Snapshot — created_at
-        ================================================== -->
 
         <div class="viewer-header">
 
@@ -556,31 +633,7 @@
 
         </div>
 
-
-        <!-- ==================================================
-             Viewer Body
-        ================================================== -->
-
         <div class="viewer-body">
-
-
-            <!-- ==================================================
-                 Selected Snapshot
-
-                 /archive/view
-                       |
-                       v
-                 viewer.html
-                       |
-                       v
-                     iframe
-                       |
-                       v
-                 /archive/snapshot
-                       |
-                       v
-                 MongoDB raw_html
-            ================================================== -->
 
             {% if selected_version %}
 
@@ -592,17 +645,6 @@
                     sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox"
                 >
                 </iframe>
-
-
-            <!-- ==================================================
-                 Initial Viewer
-
-                 有 Snapshot，
-                 但尚未指定 version。
-
-                 只顯示提示，
-                 不載入 Snapshot HTML。
-            ================================================== -->
 
             {% elif versions %}
 
@@ -629,11 +671,6 @@
                     </div>
 
                 </div>
-
-
-            <!-- ==================================================
-                 No Snapshot
-            ================================================== -->
 
             {% else %}
 
@@ -662,7 +699,429 @@
 
     </section>
 
+    <section class="archive-chat">
+
+        <div class="archive-chat-header">
+
+            <h2 class="archive-chat-title">
+                🤖 Article Archive Robot
+            </h2>
+
+            <span
+                id="archive-chat-status"
+                class="archive-chat-status"
+            >
+                Ready
+            </span>
+
+        </div>
+
+        <div
+            id="archive-chat-context"
+            class="archive-chat-context"
+        >
+            {% if selected_version %}
+
+                目前問答模式：Latest Article +
+                Historical Snapshot Difference
+
+            {% else %}
+
+                目前問答模式：Latest Article
+
+            {% endif %}
+        </div>
+
+        <div
+            id="archive-chat-messages"
+            class="archive-chat-messages"
+            aria-live="polite"
+        >
+
+            <div class="chat-message system">
+
+                {% if selected_version %}
+
+                    你可以詢問目前文章與這個歷史版本之間的內容差異。
+
+                {% else %}
+
+                    你可以直接詢問目前文章內容。
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="archive-chat-input-area">
+
+            <textarea
+                id="archive-chat-input"
+                class="archive-chat-input"
+                rows="2"
+                placeholder="輸入你想詢問的問題..."
+                aria-label="Article Archive Robot 問題"
+            ></textarea>
+
+            <button
+                id="archive-chat-send"
+                class="archive-chat-send"
+                type="button"
+            >
+                Send
+            </button>
+
+        </div>
+
+    </section>
+
 </div>
+
+<script>
+
+(function () {
+
+    "use strict";
+
+    const articleUrl = {{ url | tojson }};
+
+    const selectedVersion = {{ selected_version | tojson }};
+
+    const messagesElement =
+        document.getElementById(
+            "archive-chat-messages"
+        );
+
+    const inputElement =
+        document.getElementById(
+            "archive-chat-input"
+        );
+
+    const sendButton =
+        document.getElementById(
+            "archive-chat-send"
+        );
+
+    const statusElement =
+        document.getElementById(
+            "archive-chat-status"
+        );
+
+    if (
+        !messagesElement ||
+        !inputElement ||
+        !sendButton ||
+        !statusElement
+    ) {
+        return;
+    }
+
+    function setStatus(
+        text
+    ) {
+        statusElement.textContent =
+            text;
+    }
+
+    function addMessage(
+        type,
+        text,
+        sources
+    ) {
+        const message =
+            document.createElement(
+                "div"
+            );
+
+        message.className =
+            "chat-message " + type;
+
+        message.textContent =
+            text;
+
+        if (
+            type === "assistant" &&
+            Array.isArray(sources) &&
+            sources.length > 0
+        ) {
+
+            const sourcesElement =
+                document.createElement(
+                    "div"
+                );
+
+            sourcesElement.className =
+                "chat-sources";
+
+            const titleElement =
+                document.createElement(
+                    "div"
+                );
+
+            titleElement.className =
+                "chat-sources-title";
+
+            titleElement.textContent =
+                "引用來源";
+
+            sourcesElement.appendChild(
+                titleElement
+            );
+
+            sources.forEach(
+                function (source) {
+
+                    const sourceElement =
+                        document.createElement(
+                            "div"
+                        );
+
+                    sourceElement.className =
+                        "chat-source";
+
+                    const sourceUrl =
+                        typeof source === "string"
+                            ? source
+                            : source.url;
+
+                    if (
+                        sourceUrl
+                    ) {
+
+                        const link =
+                            document.createElement(
+                                "a"
+                            );
+
+                        link.href =
+                            sourceUrl;
+
+                        link.target =
+                            "_blank";
+
+                        link.rel =
+                            "noopener noreferrer";
+
+                        link.textContent =
+                            sourceUrl;
+
+                        sourceElement.appendChild(
+                            link
+                        );
+
+                    } else {
+
+                        sourceElement.textContent =
+                            JSON.stringify(
+                                source
+                            );
+
+                    }
+
+                    sourcesElement.appendChild(
+                        sourceElement
+                    );
+
+                }
+            );
+
+            message.appendChild(
+                sourcesElement
+            );
+        }
+
+        messagesElement.appendChild(
+            message
+        );
+
+        messagesElement.scrollTop =
+            messagesElement.scrollHeight;
+    }
+
+    async function sendMessage() {
+
+        const query =
+            inputElement.value.trim();
+
+        if (!query) {
+            return;
+        }
+
+        if (!articleUrl) {
+
+            addMessage(
+                "system",
+                "目前頁面沒有 Article URL。",
+            );
+
+            return;
+        }
+
+        addMessage(
+            "user",
+            query,
+        );
+
+        inputElement.value = "";
+
+        sendButton.disabled =
+            true;
+
+        inputElement.disabled =
+            true;
+
+        setStatus(
+            "Thinking..."
+        );
+
+        try {
+
+            const response =
+                await fetch(
+                    "/archive/chat",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type":
+                                "application/json",
+                        },
+                        body: JSON.stringify(
+                            {
+                                url: articleUrl,
+                                query: query,
+                                version:
+                                    selectedVersion || null,
+                            }
+                        ),
+                    }
+                );
+
+            let data = null;
+
+            try {
+
+                data =
+                    await response.json();
+
+            } catch (
+                error
+            ) {
+
+                data = null;
+
+            }
+
+            if (
+                !response.ok
+            ) {
+
+                const detail =
+                    data &&
+                    data.detail
+                        ? data.detail
+                        : "Archive Chat failed.";
+
+                throw new Error(
+                    detail
+                );
+            }
+
+            const answer =
+                data &&
+                typeof data.answer === "string"
+                    ? data.answer
+                    : "";
+
+            const sources =
+                data &&
+                Array.isArray(data.sources)
+                    ? data.sources
+                    : [];
+
+            if (!answer.trim()) {
+
+                addMessage(
+                    "assistant",
+                    "目前沒有可用的回答。",
+                    sources
+                );
+
+            } else {
+
+                addMessage(
+                    "assistant",
+                    answer,
+                    sources
+                );
+
+            }
+
+            setStatus(
+                "Ready"
+            );
+
+        } catch (
+            error
+        ) {
+
+            addMessage(
+                "system",
+                "Robot Error: " +
+                (
+                    error &&
+                    error.message
+                        ? error.message
+                        : "Archive Chat failed."
+                )
+            );
+
+            setStatus(
+                "Error"
+            );
+
+        } finally {
+
+            sendButton.disabled =
+                false;
+
+            inputElement.disabled =
+                false;
+
+            inputElement.focus();
+
+        }
+
+    }
+
+    sendButton.addEventListener(
+        "click",
+        sendMessage
+    );
+
+    inputElement.addEventListener(
+        "keydown",
+        function (
+            event
+        ) {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+})();
+
+</script>
 
 </body>
 

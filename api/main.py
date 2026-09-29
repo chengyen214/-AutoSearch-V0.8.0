@@ -292,6 +292,8 @@ from api.routes import (
 
     archive_viewer,
 
+    archive_chat,
+
     archive_management,
 
     historical_search,
@@ -753,6 +755,17 @@ app.include_router(
 
 
 # ==================================================
+# V7
+# R10.5
+# Article Archive Chat API
+# ==================================================
+
+app.include_router(
+    archive_chat.router
+)
+
+
+# ==================================================
 # V4 P2.4
 # Knowledge Archive Management API
 # ==================================================
@@ -861,6 +874,7 @@ app.include_router(
 app.include_router(
     targets.router
 )
+
 
 # ==================================================
 # V7

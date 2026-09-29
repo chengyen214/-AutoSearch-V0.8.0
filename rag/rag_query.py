@@ -12,6 +12,8 @@ RAG Query Entry
         ↓
     RAG-6 Context Builder
         ↓
+    R10.4 Archive RAG Context
+        ↓
     RAG-7.2 Prompt Construction
         ↓
     RAG-7.4 LLM Invocation
@@ -23,10 +25,12 @@ RAG Query Entry
     Final Response
 
 用途:
-    提供單一入口，串聯 RAG-5 至 RAG-8。
+    提供單一入口，串聯 RAG-5 至 RAG-8
+    與 R10.4 Latest + Historical RAG。
 """
 
 from rag.retrieval_context import RetrievalContext
+from rag.archive_rag_context import ArchiveRAGContext
 from rag.generation.prompt_builder import PromptBuilder
 from rag.generation.llm_invoker import LLMInvoker
 from rag.generation.answer_generator import AnswerGenerator
@@ -36,6 +40,9 @@ from rag.response_formatter import ResponseFormatter
 class RAGQuery:
     def __init__(self):
         self.retrieval_context = RetrievalContext()
+        self.archive_rag_context = ArchiveRAGContext(
+            retrieval_context=self.retrieval_context
+        )
         self.prompt_builder = PromptBuilder()
         self.llm_invoker = LLMInvoker()
         self.answer_generator = AnswerGenerator()
@@ -45,6 +52,8 @@ class RAGQuery:
         self,
         query: str,
         urls=None,
+        historical_snapshot=None,
+        latest_snapshot=None,
     ):
         if urls == []:
             return {
@@ -52,9 +61,11 @@ class RAGQuery:
                 "sources": [],
             }
 
-        context = self.retrieval_context.build(
+        context = self.archive_rag_context.build(
             query=query,
             urls=urls,
+            historical_snapshot=historical_snapshot,
+            latest_snapshot=latest_snapshot,
         )
 
         prompt = self.prompt_builder.build(
