@@ -41,7 +41,6 @@ Content Cleaning
     12. 不執行 LLM。
 """
 
-
 import re
 
 
@@ -68,15 +67,7 @@ class ContentCleaner:
         LLM
     """
 
-    # ==================================================
-    # Configuration
-    # ==================================================
-
     MAX_CONSECUTIVE_NEWLINES = 2
-
-    # ==================================================
-    # Clean Content
-    # ==================================================
 
     @classmethod
     def clean(
@@ -101,10 +92,6 @@ class ContentCleaner:
                 content 不是 str。
         """
 
-        # ----------------------------------------------
-        # Validate Content
-        # ----------------------------------------------
-
         if content is None:
             raise ValueError(
                 "Content cannot be None."
@@ -123,10 +110,6 @@ class ContentCleaner:
                 "Content cannot be empty."
             )
 
-        # ----------------------------------------------
-        # Normalize Newlines
-        # ----------------------------------------------
-
         cleaned = content.replace(
             "\r\n",
             "\n"
@@ -137,14 +120,6 @@ class ContentCleaner:
             "\n"
         )
 
-        # ----------------------------------------------
-        # Remove Horizontal Whitespace
-        # ----------------------------------------------
-        #
-        # 保留中文、英文與正常文字內容，
-        # 只處理每行前後多餘空白。
-        # ----------------------------------------------
-
         lines = cleaned.split(
             "\n"
         )
@@ -152,7 +127,6 @@ class ContentCleaner:
         normalized_lines = []
 
         for line in lines:
-
             normalized_line = line.strip()
 
             normalized_lines.append(
@@ -163,42 +137,13 @@ class ContentCleaner:
             normalized_lines
         )
 
-        # ----------------------------------------------
-        # Normalize Consecutive Blank Lines
-        # ----------------------------------------------
-        #
-        # 例如：
-        #
-        # text
-        #
-        #
-        #
-        # next
-        #
-        # ↓
-        #
-        # text
-        #
-        # next
-        #
-        # 保留最多一個空白行。
-        # ----------------------------------------------
-
         cleaned = re.sub(
             r"\n{3,}",
             "\n\n",
             cleaned
         )
 
-        # ----------------------------------------------
-        # Remove Leading / Trailing Whitespace
-        # ----------------------------------------------
-
         cleaned = cleaned.strip()
-
-        # ----------------------------------------------
-        # Final Validation
-        # ----------------------------------------------
 
         if not cleaned:
             raise ValueError(

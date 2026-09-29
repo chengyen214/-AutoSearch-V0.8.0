@@ -3,57 +3,8 @@ rag/retriever/retriever.py
 
 AutoSearch V7
 
-RAG-5
-Retriever Integration
-
-功能：
-
-    提供 RAG-5 的統整使用入口。
-
-完整資料流程：
-
-    User Query
-        ↓
-    RAG-5.2 Query Embedding
-        ↓
-    RAG-5.3 ChromaDB Candidate Retrieval
-        ↓
-    Candidate Results
-        ↓
-    RAG-5.4 Final Top-K
-        ↓
-    Final Top-K Results
-        ↓
-    RAG-5.5 Retrieval Result
-        ↓
-    List[RetrievalResult]
-
-本階段負責：
-
-    1. 建立 RAG-5 Retriever 元件
-    2. 串接 QueryEmbedding
-    3. 串接 ChromaDBRetrieval
-    4. 串接 TopKRetrieval
-    5. 串接 RetrievalResultBuilder
-    6. 提供單一 search() 使用入口
-
-本階段不負責：
-
-    - Embedding Model Implementation
-    - ChromaDB Query Implementation
-    - Candidate Retrieval Logic
-    - Top-K Selection Logic
-    - RetrievalResult Model Logic
-    - Reranking
-    - Similarity Threshold
-    - Context Builder
-    - LLM
+RAG-5 Retriever Integration
 """
-
-
-# ============================================================
-# Imports
-# ============================================================
 
 from rag.chroma.client import (
     ChromaDBClient,
@@ -85,20 +36,12 @@ from rag.retriever.retrieval_result import (
 )
 
 
-# ============================================================
-# RAG Retriever
-# ============================================================
-
 class RAGRetriever:
     """
     RAG-5 統整使用入口。
 
     將 RAG-5.2～RAG-5.5 串接成單一 Retrieval API。
     """
-
-    # ========================================================
-    # Initialize
-    # ========================================================
 
     def __init__(
         self,
@@ -141,148 +84,72 @@ class RAGRetriever:
             最終 Retrieval 結果數量。
         """
 
-        # ----------------------------------------------------
-        # Configuration
-        # ----------------------------------------------------
-
         if candidate_k is None:
             candidate_k = CANDIDATE_K
 
         if top_k is None:
             top_k = TOP_K
 
-        # ----------------------------------------------------
-        # ChromaDB Client
-        # ----------------------------------------------------
-
         if chroma_client is None:
-            chroma_client = (
-                ChromaDBClient()
-            )
+            chroma_client = ChromaDBClient()
 
-        self.chroma_client = (
-            chroma_client
-        )
-
-        # ----------------------------------------------------
-        # ChromaDB Collection
-        # ----------------------------------------------------
+        self.chroma_client = chroma_client
 
         if chroma_collection is None:
-            chroma_collection = (
-                ChromaCollection(
-                    chroma_client=(
-                        self.chroma_client
-                    )
-                )
+            chroma_collection = ChromaCollection(
+                chroma_client=self.chroma_client
             )
 
-        self.chroma_collection = (
-            chroma_collection
-        )
-
-        # ----------------------------------------------------
-        # RAG-5.2 Query Embedding
-        # ----------------------------------------------------
+        self.chroma_collection = chroma_collection
 
         if query_embedding is None:
-            query_embedding = (
-                QueryEmbedding()
-            )
+            query_embedding = QueryEmbedding()
 
-        self.query_embedding = (
-            query_embedding
-        )
-
-        # ----------------------------------------------------
-        # RAG-5.3 Candidate Retrieval
-        # ----------------------------------------------------
+        self.query_embedding = query_embedding
 
         if chroma_retrieval is None:
-            chroma_retrieval = (
-                ChromaDBRetrieval(
-                    chroma_collection=(
-                        self.chroma_collection
-                    ),
-                    query_embedding=(
-                        self.query_embedding
-                    ),
-                    candidate_k=candidate_k,
-                )
+            chroma_retrieval = ChromaDBRetrieval(
+                chroma_collection=self.chroma_collection,
+                query_embedding=self.query_embedding,
+                candidate_k=candidate_k,
             )
 
-        self.chroma_retrieval = (
-            chroma_retrieval
-        )
-
-        # ----------------------------------------------------
-        # RAG-5.4 Final Top-K
-        # ----------------------------------------------------
+        self.chroma_retrieval = chroma_retrieval
 
         if top_k_retrieval is None:
-            top_k_retrieval = (
-                TopKRetrieval(
-                    top_k=top_k
-                )
+            top_k_retrieval = TopKRetrieval(
+                top_k=top_k
             )
 
-        self.top_k_retrieval = (
-            top_k_retrieval
-        )
-
-        # ----------------------------------------------------
-        # RAG-5.5 Retrieval Result
-        # ----------------------------------------------------
+        self.top_k_retrieval = top_k_retrieval
 
         if retrieval_result_builder is None:
-            retrieval_result_builder = (
-                RetrievalResultBuilder()
-            )
+            retrieval_result_builder = RetrievalResultBuilder()
 
-        self.retrieval_result_builder = (
-            retrieval_result_builder
-        )
-
-    # ========================================================
-    # Search
-    # ========================================================
+        self.retrieval_result_builder = retrieval_result_builder
 
     def search(
         self,
         query,
+        urls=None,
     ):
         """
         執行完整 RAG-5 Retrieval。
 
-        Flow：
+        urls=None:
+            不限制 Archive 範圍。
 
-            Query
-                ↓
-            RAG-5.2
-                ↓
-            RAG-5.3
-                ↓
-            RAG-5.4
-                ↓
-            RAG-5.5
-                ↓
-            List[RetrievalResult]
+        urls=[...]:
+            僅檢索指定 URL。
 
-        Returns
-        -------
-        list[RetrievalResult]
+        urls=[]:
+            不取得任何 Retrieval Result。
         """
-
-        # ----------------------------------------------------
-        # Validate Query
-        #
-        # QueryEmbedding 本身會執行完整 query validation。
-        # 這裡直接交由 RAG-5.3 使用既有 QueryEmbedding。
-        # ----------------------------------------------------
 
         candidate_result = (
             self.chroma_retrieval.retrieve(
-                query
+                query,
+                urls=urls,
             )
         )
 
@@ -299,10 +166,6 @@ class RAGRetriever:
         )
 
         return retrieval_results
-
-    # ========================================================
-    # Configuration Getters
-    # ========================================================
 
     def get_candidate_k(
         self
@@ -325,10 +188,6 @@ class RAGRetriever:
         return (
             self.top_k_retrieval.get_top_k()
         )
-
-    # ========================================================
-    # Component Getters
-    # ========================================================
 
     def get_query_embedding(
         self
@@ -366,10 +225,6 @@ class RAGRetriever:
 
         return self.retrieval_result_builder
 
-
-# ============================================================
-# Public API
-# ============================================================
 
 __all__ = [
     "RAGRetriever",

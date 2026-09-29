@@ -8,14 +8,12 @@ P2.4.2 Composite Archive Search API
 P2.4.3 Composite Search Web UI
 
 用途:
-
     提供 Knowledge Archive Web API
     提供 Knowledge Archive Web UI
     提供 Composite Archive Search API
     提供 Composite Archive Search Web UI
 
 架構:
-
     Browser
         ↓
     /archive/search
@@ -33,11 +31,9 @@ P2.4.3 Composite Search Web UI
     Database
 
 注意:
-
     API Layer 不直接操作 Database。
 
 路由:
-
     GET /archive/ui
         Knowledge Archive Web UI
 
@@ -52,7 +48,6 @@ P2.4.3 Composite Search Web UI
         Composite Archive Search JSON API
 
 Composite Search 支援:
-
     keyword
     url
     source
@@ -65,7 +60,6 @@ Composite Search 支援:
     importance_max
 
 AI Result:
-
     articles.ai_summary
     articles.ai_category
     articles.ai_keywords
@@ -77,43 +71,26 @@ AI Result:
     articles.ai_status
 """
 
-
 from fastapi import (
     APIRouter,
     HTTPException,
     Query,
     Request,
 )
-
 from fastapi.templating import Jinja2Templates
 
 from services.archive_web_service import (
     ArchiveWebService,
 )
 
-
-# ============================================================
-# Router
-# ============================================================
-
 router = APIRouter(
     prefix="/archive",
     tags=["Archive"],
 )
 
-
-# ============================================================
-# Templates
-# ============================================================
-
 templates = Jinja2Templates(
     directory="templates",
 )
-
-
-# ============================================================
-# Service
-# ============================================================
 
 _service = None
 
@@ -125,7 +102,6 @@ def get_archive_service():
     使用 Lazy Initialization，
     避免 API import 時立即建立 Repository。
     """
-
     global _service
 
     if _service is None:
@@ -133,10 +109,6 @@ def get_archive_service():
 
     return _service
 
-
-# ============================================================
-# Archive Web UI
-# ============================================================
 
 @router.get(
     "/ui",
@@ -150,11 +122,9 @@ def archive_ui(
 
     GET /archive/ui
     """
-
     service = get_archive_service()
 
     statistics = service.get_statistics()
-
     articles = service.get_articles(
         limit=20,
     )
@@ -170,10 +140,6 @@ def archive_ui(
     )
 
 
-# ============================================================
-# Composite Archive Search Web UI
-# ============================================================
-
 def _render_search_ui(
     request: Request,
 ):
@@ -181,20 +147,12 @@ def _render_search_ui(
     Composite Archive Search Web UI 共用入口。
 
     使用:
-
         GET /archive/search
         GET /archive/search/ui
 
-    注意:
-
-        此路由只負責回傳 HTML。
-
-        Composite Search JSON API
-        使用:
-
-            GET /archive/search/api
+    此路由只負責回傳 HTML。
+    Composite Search JSON API 使用 GET /archive/search/api。
     """
-
     return templates.TemplateResponse(
         request=request,
         name="archive/search.html",
@@ -205,12 +163,6 @@ def _render_search_ui(
         },
     )
 
-
-# ============================================================
-# /archive/search
-#
-# Composite Archive Search Web UI
-# ============================================================
 
 @router.get(
     "/search",
@@ -224,25 +176,11 @@ def search_archive_ui(
 
     GET /archive/search
 
-    Browser 開啟此 URL 時，
-    應該顯示搜尋頁面，而不是 JSON。
-
-    Search UI 內部再呼叫:
-
-        GET /archive/search/api
+    Browser 開啟此 URL 時顯示搜尋頁面。
+    Search UI 內部再呼叫 GET /archive/search/api。
     """
+    return _render_search_ui(request)
 
-    return _render_search_ui(
-        request,
-    )
-
-
-# ============================================================
-# /archive/search/ui
-#
-# Composite Archive Search Web UI
-# Compatibility Endpoint
-# ============================================================
 
 @router.get(
     "/search/ui",
@@ -256,25 +194,12 @@ def search_ui(
 
     GET /archive/search/ui
 
-    與:
-
-        GET /archive/search
-
-    使用相同 UI。
+    與 GET /archive/search 使用相同 UI。
     """
-
-    return _render_search_ui(
-        request,
-    )
+    return _render_search_ui(request)
 
 
-# ============================================================
-# Article List
-# ============================================================
-
-@router.get(
-    "/articles",
-)
+@router.get("/articles")
 def get_articles(
     limit: int = Query(
         100,
@@ -282,12 +207,7 @@ def get_articles(
         le=1000,
     ),
 ):
-    """
-    取得 Archive Article。
-
-    GET /archive/articles
-    """
-
+    """取得 Archive Article。GET /archive/articles。"""
     service = get_archive_service()
 
     return service.get_articles(
@@ -295,13 +215,7 @@ def get_articles(
     )
 
 
-# ============================================================
-# Pagination
-# ============================================================
-
-@router.get(
-    "/articles/page",
-)
+@router.get("/articles/page")
 def get_articles_with_pagination(
     page: int = Query(
         1,
@@ -313,12 +227,7 @@ def get_articles_with_pagination(
         le=100,
     ),
 ):
-    """
-    分頁取得 Archive Articles。
-
-    GET /archive/articles/page
-    """
-
+    """分頁取得 Archive Articles。"""
     service = get_archive_service()
 
     return service.get_articles_with_pagination(
@@ -327,46 +236,24 @@ def get_articles_with_pagination(
     )
 
 
-# ============================================================
-# Article Versions
-# ============================================================
-
-@router.get(
-    "/articles/{article_id}/versions",
-)
+@router.get("/articles/{article_id}/versions")
 def get_versions(
     article_id: int,
 ):
-    """
-    取得 Article 所有 Archive Versions。
-    """
-
+    """取得 Article 所有 Archive Versions。"""
     service = get_archive_service()
 
-    return service.get_versions(
-        article_id,
-    )
+    return service.get_versions(article_id)
 
 
-# ============================================================
-# Latest Version
-# ============================================================
-
-@router.get(
-    "/articles/{article_id}/versions/latest",
-)
+@router.get("/articles/{article_id}/versions/latest")
 def get_latest_version(
     article_id: int,
 ):
-    """
-    取得 Article 最新 Version。
-    """
-
+    """取得 Article 最新 Version。"""
     service = get_archive_service()
 
-    result = service.get_latest_version(
-        article_id,
-    )
+    result = service.get_latest_version(article_id)
 
     if result is None:
         raise HTTPException(
@@ -377,25 +264,14 @@ def get_latest_version(
     return result
 
 
-# ============================================================
-# Article
-# ============================================================
-
-@router.get(
-    "/articles/{article_id}",
-)
+@router.get("/articles/{article_id}")
 def get_article(
     article_id: int,
 ):
-    """
-    取得指定 Article。
-    """
-
+    """取得指定 Article。"""
     service = get_archive_service()
 
-    result = service.get_article(
-        article_id,
-    )
+    result = service.get_article(article_id)
 
     if result is None:
         raise HTTPException(
@@ -406,42 +282,22 @@ def get_article(
     return result
 
 
-# ============================================================
-# Archive By Date
-# ============================================================
-
-@router.get(
-    "/date/{archive_date}",
-)
+@router.get("/date/{archive_date}")
 def get_by_date(
     archive_date: str,
 ):
-    """
-    依日期取得 Archive。
-    """
-
+    """依日期取得 Archive。"""
     service = get_archive_service()
 
-    return service.get_by_date(
-        archive_date,
-    )
+    return service.get_by_date(archive_date)
 
 
-# ============================================================
-# Archive By Month
-# ============================================================
-
-@router.get(
-    "/month/{year}/{month}",
-)
+@router.get("/month/{year}/{month}")
 def get_by_month(
     year: int,
     month: int,
 ):
-    """
-    依月份取得 Archive。
-    """
-
+    """依月份取得 Archive。"""
     if month < 1 or month > 12:
         raise HTTPException(
             status_code=400,
@@ -450,57 +306,28 @@ def get_by_month(
 
     service = get_archive_service()
 
-    return service.get_by_month(
-        year,
-        month,
-    )
+    return service.get_by_month(year, month)
 
 
-# ============================================================
-# Archive By Year
-# ============================================================
-
-@router.get(
-    "/year/{year}",
-)
+@router.get("/year/{year}")
 def get_by_year(
     year: int,
 ):
-    """
-    依年份取得 Archive。
-    """
-
+    """依年份取得 Archive。"""
     service = get_archive_service()
 
-    return service.get_by_year(
-        year,
-    )
+    return service.get_by_year(year)
 
 
-# ============================================================
-# Archive By Source
-# ============================================================
-
-@router.get(
-    "/source/{source}",
-)
+@router.get("/source/{source}")
 def get_by_source(
     source: str,
 ):
-    """
-    依來源取得 Archive。
-    """
-
+    """依來源取得 Archive。"""
     service = get_archive_service()
 
-    return service.get_by_source(
-        source,
-    )
+    return service.get_by_source(source)
 
-
-# ============================================================
-# Composite Archive Search
-# ============================================================
 
 def _composite_archive_search(
     keyword: str | None = None,
@@ -522,82 +349,34 @@ def _composite_archive_search(
     所有搜尋條件皆為 Optional。
 
     支援:
+        keyword, url, source, date_from, date_to
+        year, month, category
+        importance_min, importance_max
 
-        keyword
-        url
-        source
-        date_from
-        date_to
-        year
-        month
-        category
-        importance_min
-        importance_max
-
-    AI Result:
-
-        ai_summary
-        ai_category
-        ai_keywords
-        ai_importance
-        ai_model
-        ai_version
-        ai_analyze_time
-        ai_confidence
-        ai_status
-
-    注意:
-
-        API Layer 不直接操作 Database。
-
-        Repository / Service 負責取得資料。
+    API Layer 不直接操作 Database。
+    Repository / Service 負責取得資料。
     """
-
     service = get_archive_service()
 
-    # ========================================================
-    # Normalize String Filters
-    # ========================================================
-
     if keyword is not None:
-
-        keyword = str(
-            keyword
-        ).strip()
-
+        keyword = str(keyword).strip()
         if not keyword:
             keyword = None
 
     if url is not None:
-
-        url = str(
-            url
-        ).strip()
-
+        url = str(url).strip()
         if not url:
             url = None
 
     if source is not None:
-
-        source = str(
-            source
-        ).strip()
-
+        source = str(source).strip()
         if not source:
             source = None
 
     if category is not None:
-
-        category = str(
-            category
-        ).strip()
-
+        category = str(category).strip()
         if not category:
             category = None
-
-    # ========================================================
-    # Validate Importance Range
-    # ========================================================
 
     if (
         importance_min is not None
@@ -612,10 +391,6 @@ def _composite_archive_search(
             ),
         )
 
-    # ========================================================
-    # Validate Date Range
-    # ========================================================
-
     if (
         date_from is not None
         and date_to is not None
@@ -629,25 +404,14 @@ def _composite_archive_search(
             ),
         )
 
-    # ========================================================
-    # Validate Month
-    # ========================================================
-
     if (
         month is not None
-        and (
-            month < 1
-            or month > 12
-        )
+        and (month < 1 or month > 12)
     ):
         raise HTTPException(
             status_code=400,
             detail="Month must be between 1 and 12",
         )
-
-    # ========================================================
-    # Composite Search
-    # ========================================================
 
     result = service.composite_search(
         keyword=keyword,
@@ -664,12 +428,7 @@ def _composite_archive_search(
         page_size=page_size,
     )
 
-    # ========================================================
-    # Normalize Empty Response
-    # ========================================================
-
     if result is None:
-
         return {
             "results": [],
             "total": 0,
@@ -692,43 +451,23 @@ def _composite_archive_search(
     return result
 
 
-# ============================================================
-# /archive/search/api
-#
-# Composite Archive Search JSON API
-# ============================================================
-
-@router.get(
-    "/search/api",
-)
+@router.get("/search/api")
 def composite_search_api(
-    keyword: str | None = Query(
-        None,
-    ),
+    keyword: str | None = Query(None),
     url: str | None = Query(
         None,
         description="Optional URL search filter",
     ),
-    source: str | None = Query(
-        None,
-    ),
-    date_from: str | None = Query(
-        None,
-    ),
-    date_to: str | None = Query(
-        None,
-    ),
-    year: int | None = Query(
-        None,
-    ),
+    source: str | None = Query(None),
+    date_from: str | None = Query(None),
+    date_to: str | None = Query(None),
+    year: int | None = Query(None),
     month: int | None = Query(
         None,
         ge=1,
         le=12,
     ),
-    category: str | None = Query(
-        None,
-    ),
+    category: str | None = Query(None),
     importance_min: float | None = Query(
         None,
         ge=0,
@@ -755,45 +494,22 @@ def composite_search_api(
     GET /archive/search/api
 
     Optional filters:
-
-        keyword
-        url
-        source
-        date_from
-        date_to
-        year
-        month
-        category
-        importance_min
-        importance_max
+        keyword, url, source, date_from, date_to
+        year, month, category
+        importance_min, importance_max
 
     Examples:
-
         /archive/search/api?keyword=TSMC
-
         /archive/search/api?url=tsmc.com
-
         /archive/search/api?keyword=TSMC&url=tsmc.com
-
         /archive/search/api?source=CNA&url=cna.com.tw
-
         /archive/search/api?category=Semiconductor
 
     AI Result:
-
         results[*].ai_summary
 
-    回傳:
-
-        {
-            "results": [...],
-            "total": ...,
-            "page": ...,
-            "page_size": ...,
-            "filters": {...}
-        }
+    回傳 results、total、page、page_size 與 filters。
     """
-
     return _composite_archive_search(
         keyword=keyword,
         url=url,
@@ -810,18 +526,9 @@ def composite_search_api(
     )
 
 
-# ============================================================
-# Archive Count
-# ============================================================
-
-@router.get(
-    "/count",
-)
+@router.get("/count")
 def count_archive():
-    """
-    取得 Archive 數量。
-    """
-
+    """取得 Archive 數量。"""
     service = get_archive_service()
 
     return {
@@ -829,18 +536,9 @@ def count_archive():
     }
 
 
-# ============================================================
-# Article Count
-# ============================================================
-
-@router.get(
-    "/count/articles",
-)
+@router.get("/count/articles")
 def count_articles():
-    """
-    取得 Article 數量。
-    """
-
+    """取得 Article 數量。"""
     service = get_archive_service()
 
     return {
@@ -848,111 +546,58 @@ def count_articles():
     }
 
 
-# ============================================================
-# Count By Source
-# ============================================================
-
-@router.get(
-    "/count/source/{source}",
-)
+@router.get("/count/source/{source}")
 def count_by_source(
     source: str,
 ):
-    """
-    取得指定 Source 的 Archive 數量。
-    """
-
+    """取得指定 Source 的 Archive 數量。"""
     service = get_archive_service()
 
     return {
         "source": source,
-        "count": service.count_by_source(
-            source,
-        ),
+        "count": service.count_by_source(source),
     }
 
 
-# ============================================================
-# Count By Date
-# ============================================================
-
-@router.get(
-    "/count/date/{archive_date}",
-)
+@router.get("/count/date/{archive_date}")
 def count_by_date(
     archive_date: str,
 ):
-    """
-    取得指定日期的 Archive 數量。
-    """
-
+    """取得指定日期的 Archive 數量。"""
     service = get_archive_service()
 
     return {
         "date": archive_date,
-        "count": service.count_by_date(
-            archive_date,
-        ),
+        "count": service.count_by_date(archive_date),
     }
 
 
-# ============================================================
-# Statistics
-# ============================================================
-
-@router.get(
-    "/statistics",
-)
+@router.get("/statistics")
 def get_statistics():
-    """
-    取得 Archive Statistics。
-    """
-
+    """取得 Archive Statistics。"""
     service = get_archive_service()
 
     return service.get_statistics()
 
 
-# ============================================================
-# Knowledge History
-# ============================================================
-
-@router.get(
-    "/knowledge/{article_id}/history",
-)
+@router.get("/knowledge/{article_id}/history")
 def get_knowledge_history(
     article_id: int,
 ):
-    """
-    取得 Article Knowledge History。
-    """
-
+    """取得 Article Knowledge History。"""
     service = get_archive_service()
 
-    return service.get_knowledge_history(
-        article_id,
-    )
+    return service.get_knowledge_history(article_id)
 
 
-# ============================================================
-# Latest Knowledge
-# ============================================================
-
-@router.get(
-    "/knowledge/{article_id}/latest",
-)
+@router.get("/knowledge/{article_id}/latest")
 def get_latest_knowledge(
     article_id: int,
 ):
-    """
-    取得 Article 最新 Knowledge。
-    """
-
+    """取得 Article 最新 Knowledge。"""
     service = get_archive_service()
 
-    result = service.get_latest_knowledge(
-        article_id,
-    )
+    result = service.get_latest_knowledge(article_id)
 
     if result is None:
         raise HTTPException(
@@ -963,39 +608,19 @@ def get_latest_knowledge(
     return result
 
 
-# ============================================================
-# Knowledge Evolution
-# ============================================================
-
-@router.get(
-    "/knowledge/{article_id}/evolution",
-)
+@router.get("/knowledge/{article_id}/evolution")
 def get_knowledge_evolution(
     article_id: int,
 ):
-    """
-    取得完整 Knowledge Evolution。
-    """
-
+    """取得完整 Knowledge Evolution。"""
     service = get_archive_service()
 
-    return service.get_knowledge_evolution(
-        article_id,
-    )
+    return service.get_knowledge_evolution(article_id)
 
 
-# ============================================================
-# Health
-# ============================================================
-
-@router.get(
-    "/health",
-)
+@router.get("/health")
 def archive_health():
-    """
-    Archive API Health Check。
-    """
-
+    """Archive API Health Check。"""
     return {
         "status": "ok",
         "service": "archive",

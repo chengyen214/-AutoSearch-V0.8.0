@@ -15,13 +15,11 @@
         AutoSearch V4 - Composite Archive Search
     </title>
 
-
     <style>
 
         * {
             box-sizing: border-box;
         }
-
 
         body {
 
@@ -39,7 +37,6 @@
             color: #222;
         }
 
-
         header {
 
             background: #1f2937;
@@ -49,14 +46,12 @@
             padding: 20px 40px;
         }
 
-
         header h1 {
 
             margin: 0 0 5px 0;
 
             font-size: 26px;
         }
-
 
         header p {
 
@@ -65,12 +60,10 @@
             opacity: 0.8;
         }
 
-
         nav {
 
             margin-top: 15px;
         }
-
 
         nav a {
 
@@ -81,12 +74,10 @@
             margin-right: 20px;
         }
 
-
         nav a:hover {
 
             text-decoration: underline;
         }
-
 
         .container {
 
@@ -96,7 +87,6 @@
 
             padding: 0 20px;
         }
-
 
         .card {
 
@@ -118,12 +108,10 @@
                 );
         }
 
-
         .card h2 {
 
             margin-top: 0;
         }
-
 
         .search-grid {
 
@@ -135,7 +123,6 @@
             gap: 15px;
         }
 
-
         .field {
 
             display: flex;
@@ -143,14 +130,12 @@
             flex-direction: column;
         }
 
-
         .field label {
 
             font-weight: bold;
 
             margin-bottom: 6px;
         }
-
 
         .field input {
 
@@ -163,7 +148,6 @@
 
             font-size: 14px;
         }
-
 
         .field input:focus {
 
@@ -181,12 +165,10 @@
                 );
         }
 
-
         .actions {
 
             margin-top: 20px;
         }
-
 
         button {
 
@@ -202,7 +184,6 @@
             font-size: 14px;
         }
 
-
         .search-button {
 
             background: #2563eb;
@@ -210,12 +191,10 @@
             color: white;
         }
 
-
         .search-button:hover {
 
             background: #1d4ed8;
         }
-
 
         .search-button:disabled {
 
@@ -223,7 +202,6 @@
 
             cursor: not-allowed;
         }
-
 
         .reset-button {
 
@@ -234,12 +212,10 @@
             margin-left: 8px;
         }
 
-
         .reset-button:hover {
 
             background: #4b5563;
         }
-
 
         .result-info {
 
@@ -254,7 +230,6 @@
             flex-wrap: wrap;
         }
 
-
         .result {
 
             border-top:
@@ -263,12 +238,10 @@
             padding: 18px 0;
         }
 
-
         .result:first-child {
 
             border-top: none;
         }
-
 
         .result-title {
 
@@ -279,7 +252,6 @@
             margin-bottom: 8px;
         }
 
-
         .result-title a {
 
             color: #2563eb;
@@ -287,12 +259,10 @@
             text-decoration: none;
         }
 
-
         .result-title a:hover {
 
             text-decoration: underline;
         }
-
 
         .meta {
 
@@ -305,7 +275,6 @@
             line-height: 1.7;
         }
 
-
         .content {
 
             line-height: 1.6;
@@ -316,11 +285,6 @@
 
             margin-top: 10px;
         }
-
-
-        /* ==================================================
-           AI Summary
-           ================================================== */
 
         .ai-summary {
 
@@ -342,7 +306,6 @@
             white-space: pre-wrap;
         }
 
-
         .ai-summary-title {
 
             font-weight: bold;
@@ -351,11 +314,6 @@
 
             color: #15803d;
         }
-
-
-        /* ==================================================
-           URL
-           ================================================== */
 
         .url {
 
@@ -368,7 +326,6 @@
             color: #6b7280;
         }
 
-
         .url a {
 
             color: #2563eb;
@@ -376,12 +333,10 @@
             text-decoration: none;
         }
 
-
         .url a:hover {
 
             text-decoration: underline;
         }
-
 
         .badge {
 
@@ -401,14 +356,12 @@
             font-size: 12px;
         }
 
-
         .importance {
 
             background: #fef3c7;
 
             color: #92400e;
         }
-
 
         .category {
 
@@ -417,14 +370,12 @@
             color: #1e40af;
         }
 
-
         .source {
 
             background: #dcfce7;
 
             color: #166534;
         }
-
 
         .pagination {
 
@@ -439,7 +390,6 @@
             margin-top: 20px;
         }
 
-
         .pagination button {
 
             background: #374151;
@@ -447,12 +397,10 @@
             color: white;
         }
 
-
         .pagination button:hover:not(:disabled) {
 
             background: #111827;
         }
-
 
         .pagination button:disabled {
 
@@ -461,14 +409,12 @@
             cursor: not-allowed;
         }
 
-
         .page-info {
 
             font-weight: bold;
 
             color: #374151;
         }
-
 
         .status {
 
@@ -479,7 +425,6 @@
             min-height: 20px;
         }
 
-
         .success {
 
             color: #166534;
@@ -487,14 +432,12 @@
             font-weight: bold;
         }
 
-
         .error {
 
             color: #dc2626;
 
             font-weight: bold;
         }
-
 
         .empty {
 
@@ -505,7 +448,6 @@
             color: #6b7280;
         }
 
-
         .loading {
 
             padding: 30px;
@@ -514,7 +456,6 @@
 
             color: #6b7280;
         }
-
 
         .filter-summary {
 
@@ -525,6 +466,343 @@
             font-size: 13px;
         }
 
+        .chatbot {
+
+            margin-top: 20px;
+
+            position: relative;
+        }
+
+        .chatbot-toggle {
+
+            width: 52px;
+
+            height: 52px;
+
+            padding: 0;
+
+            border-radius: 50%;
+
+            background: #2563eb;
+
+            color: white;
+
+            font-size: 24px;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+            box-shadow:
+                0 4px 12px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.15
+                );
+        }
+
+        .chatbot-toggle:hover {
+
+            background: #1d4ed8;
+        }
+
+        .chatbot-panel {
+
+            display: none;
+
+            width: 100%;
+
+            background: white;
+
+            border:
+                1px solid #d1d5db;
+
+            border-radius: 8px;
+
+            overflow: hidden;
+
+            box-shadow:
+                0 4px 12px
+                rgba(
+                    0,
+                    0,
+                    0,
+                    0.08
+                );
+        }
+
+        .chatbot-panel.open {
+
+            display: block;
+        }
+
+        .chatbot-header {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            align-items: center;
+
+            padding:
+                14px 18px;
+
+            background: #1f2937;
+
+            color: white;
+        }
+
+        .chatbot-title {
+
+            font-size: 17px;
+
+            font-weight: bold;
+        }
+
+        .chatbot-close {
+
+            padding: 0;
+
+            width: 32px;
+
+            height: 32px;
+
+            background: transparent;
+
+            color: white;
+
+            font-size: 24px;
+
+            line-height: 1;
+        }
+
+        .chatbot-close:hover {
+
+            background:
+                rgba(
+                    255,
+                    255,
+                    255,
+                    0.12
+                );
+        }
+
+        .chatbot-messages {
+
+            min-height: 180px;
+
+            max-height: 500px;
+
+            overflow-y: auto;
+
+            padding: 16px;
+
+            background: #f9fafb;
+        }
+
+        .chat-message {
+
+            margin-bottom: 14px;
+
+            display: flex;
+
+            flex-direction: column;
+        }
+
+        .chat-message:last-child {
+
+            margin-bottom: 0;
+        }
+
+        .chat-message.user {
+
+            align-items: flex-end;
+        }
+
+        .chat-message.assistant {
+
+            align-items: flex-start;
+        }
+
+        .chat-message-content {
+
+            max-width: 85%;
+
+            padding:
+                10px 14px;
+
+            border-radius: 8px;
+
+            line-height: 1.6;
+
+            white-space: pre-wrap;
+
+            word-break: break-word;
+        }
+
+        .chat-message.user
+        .chat-message-content {
+
+            background: #2563eb;
+
+            color: white;
+        }
+
+        .chat-message.assistant
+        .chat-message-content {
+
+            background: white;
+
+            border:
+                1px solid #e5e7eb;
+
+            color: #374151;
+        }
+
+        .chat-message.error
+        .chat-message-content {
+
+            background: #fef2f2;
+
+            border:
+                1px solid #fecaca;
+
+            color: #b91c1c;
+        }
+
+        .chat-sources {
+
+            max-width: 85%;
+
+            margin-top: 8px;
+
+            padding:
+                10px 14px;
+
+            background: #eff6ff;
+
+            border:
+                1px solid #dbeafe;
+
+            border-radius: 6px;
+
+            font-size: 13px;
+
+            color: #374151;
+        }
+
+        .chat-sources-title {
+
+            font-weight: bold;
+
+            margin-bottom: 6px;
+        }
+
+        .chat-source {
+
+            margin-top: 5px;
+        }
+
+        .chat-source a {
+
+            color: #2563eb;
+
+            text-decoration: none;
+
+            word-break: break-all;
+        }
+
+        .chat-source a:hover {
+
+            text-decoration: underline;
+        }
+
+        .chatbot-input-area {
+
+            display: flex;
+
+            gap: 10px;
+
+            padding: 14px;
+
+            border-top:
+                1px solid #e5e7eb;
+
+            background: white;
+        }
+
+        .chatbot-input {
+
+            flex: 1;
+
+            min-width: 0;
+
+            padding:
+                10px 12px;
+
+            border:
+                1px solid #d1d5db;
+
+            border-radius: 5px;
+
+            font-size: 14px;
+        }
+
+        .chatbot-input:focus {
+
+            outline: none;
+
+            border-color: #2563eb;
+
+            box-shadow:
+                0 0 0 2px
+                rgba(
+                    37,
+                    99,
+                    235,
+                    0.15
+                );
+        }
+
+        .chatbot-send {
+
+            background: #2563eb;
+
+            color: white;
+
+            min-width: 70px;
+        }
+
+        .chatbot-send:hover:not(:disabled) {
+
+            background: #1d4ed8;
+        }
+
+        .chatbot-send:disabled {
+
+            background: #93c5fd;
+
+            cursor: not-allowed;
+        }
+
+        .chatbot-scope {
+
+            padding:
+                8px 14px;
+
+            background: #f3f4f6;
+
+            border-bottom:
+                1px solid #e5e7eb;
+
+            color: #6b7280;
+
+            font-size: 12px;
+        }
 
         @media (
             max-width: 800px
@@ -536,18 +814,32 @@
                     1fr;
             }
 
-
             header {
 
                 padding:
                     20px;
             }
 
-
             .container {
 
                 padding:
                     0 12px;
+            }
+
+            .chat-message-content,
+            .chat-sources {
+
+                max-width: 95%;
+            }
+
+            .chatbot-input-area {
+
+                flex-direction: column;
+            }
+
+            .chatbot-send {
+
+                width: 100%;
             }
 
         }
@@ -556,13 +848,7 @@
 
 </head>
 
-
 <body>
-
-
-<!-- ============================================= -->
-<!-- Header -->
-<!-- ============================================= -->
 
 <header>
 
@@ -573,7 +859,6 @@
     <p>
         Composite Archive Search
     </p>
-
 
     <nav>
 
@@ -589,18 +874,7 @@
 
 </header>
 
-
-
-<!-- ============================================= -->
-<!-- Main -->
-<!-- ============================================= -->
-
 <div class="container">
-
-
-    <!-- ========================================= -->
-    <!-- Search Form -->
-    <!-- ========================================= -->
 
     <div class="card">
 
@@ -608,11 +882,7 @@
             Composite Archive Search
         </h2>
 
-
         <div class="search-grid">
-
-
-            <!-- Keyword -->
 
             <div class="field">
 
@@ -628,9 +898,6 @@
 
             </div>
 
-
-            <!-- URL -->
-
             <div class="field">
 
                 <label for="url">
@@ -644,9 +911,6 @@
                 >
 
             </div>
-
-
-            <!-- Source -->
 
             <div class="field">
 
@@ -662,9 +926,6 @@
 
             </div>
 
-
-            <!-- Category -->
-
             <div class="field">
 
                 <label for="category">
@@ -679,9 +940,6 @@
 
             </div>
 
-
-            <!-- Date From -->
-
             <div class="field">
 
                 <label for="date_from">
@@ -694,9 +952,6 @@
                 >
 
             </div>
-
-
-            <!-- Date To -->
 
             <div class="field">
 
@@ -711,9 +966,6 @@
 
             </div>
 
-
-            <!-- Year -->
-
             <div class="field">
 
                 <label for="year">
@@ -727,9 +979,6 @@
                 >
 
             </div>
-
-
-            <!-- Month -->
 
             <div class="field">
 
@@ -746,9 +995,6 @@
                 >
 
             </div>
-
-
-            <!-- Importance Min -->
 
             <div class="field">
 
@@ -767,9 +1013,6 @@
 
             </div>
 
-
-            <!-- Importance Max -->
-
             <div class="field">
 
                 <label for="importance_max">
@@ -787,9 +1030,6 @@
 
             </div>
 
-
-            <!-- Page Size -->
-
             <div class="field">
 
                 <label for="page_size">
@@ -806,20 +1046,17 @@
 
             </div>
 
-
         </div>
-
 
         <div class="actions">
 
             <button
                 id="search-button"
                 class="search-button"
-                onclick="searchArchive(1)"
+                onclick="searchArchive(1, true)"
             >
                 Search
             </button>
-
 
             <button
                 class="reset-button"
@@ -830,7 +1067,6 @@
 
         </div>
 
-
         <div
             id="status"
             class="status"
@@ -838,18 +1074,11 @@
 
     </div>
 
-
-
-    <!-- ========================================= -->
-    <!-- Results -->
-    <!-- ========================================= -->
-
     <div class="card">
 
         <h2>
             Search Results
         </h2>
-
 
         <div
             id="result-info"
@@ -857,19 +1086,16 @@
         >
         </div>
 
-
         <div
             id="filter-summary"
             class="filter-summary"
         >
         </div>
 
-
         <div
             id="results"
         >
         </div>
-
 
         <div
             id="pagination"
@@ -879,48 +1105,103 @@
 
     </div>
 
+    <div class="card chatbot">
+
+        <button
+            id="chatbot-toggle"
+            class="chatbot-toggle"
+            type="button"
+            onclick="toggleChatbot()"
+            aria-label="Open Archive Chatbot"
+        >
+            💬
+        </button>
+
+        <div
+            id="chatbot-panel"
+            class="chatbot-panel"
+        >
+
+            <div class="chatbot-header">
+
+                <div class="chatbot-title">
+                    Archive Search Chatbot
+                </div>
+
+                <button
+                    class="chatbot-close"
+                    type="button"
+                    onclick="toggleChatbot(false)"
+                    aria-label="Close Chatbot"
+                >
+                    ×
+                </button>
+
+            </div>
+
+            <div
+                id="chatbot-scope"
+                class="chatbot-scope"
+            >
+                Scope: All Archive
+            </div>
+
+            <div
+                id="chatbot-messages"
+                class="chatbot-messages"
+            >
+
+                <div class="chat-message assistant">
+
+                    <div class="chat-message-content">
+
+                        你好，我可以根據目前的 Archive Search Scope
+                        回答問題。
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="chatbot-input-area">
+
+                <input
+                    id="chatbot-input"
+                    class="chatbot-input"
+                    type="text"
+                    placeholder="詢問目前 Archive..."
+                    onkeydown="handleChatInputKeydown(event)"
+                >
+
+                <button
+                    id="chatbot-send"
+                    class="chatbot-send"
+                    type="button"
+                    onclick="sendChatMessage()"
+                >
+                    Send
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
-
-
-<!-- ============================================= -->
-<!-- JavaScript -->
-<!-- ============================================= -->
-
 <script>
-
-
-/* ==================================================
-   API Endpoint
-   ==================================================
-
-   Web UI:
-
-       GET /archive/search
-           ↓
-       archive/search.html
-
-   JSON API:
-
-       GET /archive/search/api
-           ↓
-       Composite Archive Search
-
-   重要：
-   /archive/search 是 HTML 頁面。
-   /archive/search/api 才是 JSON API。
-
-   ================================================== */
 
 const SEARCH_API =
     "/archive/search/api";
 
+const RAG_API =
+    "/rag/query";
 
+let archiveSearchScope = null;
 
-/* ==================================================
-   Safe HTML Escape
-   ================================================== */
+let chatbotOpen = false;
 
 function escapeHtml(value) {
 
@@ -932,7 +1213,6 @@ function escapeHtml(value) {
         return "";
 
     }
-
 
     return String(value)
 
@@ -962,12 +1242,6 @@ function escapeHtml(value) {
         );
 }
 
-
-
-/* ==================================================
-   Get Value
-   ================================================== */
-
 function getValue(
     item,
     names
@@ -990,23 +1264,147 @@ function getValue(
 
     }
 
-
     return null;
 }
 
+function getArchiveSearchScope() {
 
+    if (
+        archiveSearchScope === null
+    ) {
 
-/* ==================================================
-   Build Query Parameters
-   ================================================== */
+        return null;
+
+    }
+
+    return [
+        ...archiveSearchScope
+    ];
+
+}
+
+function extractUrls(
+    items
+) {
+
+    if (
+        !Array.isArray(items)
+    ) {
+
+        return [];
+
+    }
+
+    return items
+
+        .map(
+            function(item) {
+
+                return getValue(
+                    item,
+                    [
+                        "url",
+                        "article_url"
+                    ]
+                );
+
+            }
+        )
+
+        .filter(
+            function(url) {
+
+                return (
+                    typeof url === "string" &&
+                    url.trim() !== ""
+                );
+
+            }
+        )
+
+        .map(
+            function(url) {
+
+                return url.trim();
+
+            }
+        );
+
+}
+
+function updateArchiveSearchScope(
+    urls
+) {
+
+    const uniqueUrls =
+        [
+            ...new Set(
+                urls
+                    .filter(
+                        function(url) {
+
+                            return (
+                                typeof url === "string" &&
+                                url.trim() !== ""
+                            );
+
+                        }
+                    )
+                    .map(
+                        function(url) {
+
+                            return url.trim();
+
+                        }
+                    )
+            )
+        ];
+
+    archiveSearchScope =
+        uniqueUrls;
+
+    updateChatbotScopeDisplay();
+
+}
+
+function updateChatbotScopeDisplay() {
+
+    const scopeElement =
+        document.getElementById(
+            "chatbot-scope"
+        );
+
+    if (!scopeElement) {
+
+        return;
+
+    }
+
+    if (
+        archiveSearchScope === null
+    ) {
+
+        scopeElement.textContent =
+            "Scope: All Archive";
+
+        return;
+
+    }
+
+    scopeElement.textContent =
+        "Scope: " +
+        archiveSearchScope.length +
+        " Search Result URLs";
+
+}
 
 function buildSearchParams(
-    page
+    page,
+    pageSizeOverride = null
 ) {
 
     const params =
         new URLSearchParams();
-
 
     const fields = [
 
@@ -1032,7 +1430,6 @@ function buildSearchParams(
 
     ];
 
-
     fields.forEach(
         function(field) {
 
@@ -1041,24 +1438,14 @@ function buildSearchParams(
                     field
                 );
 
-
             if (!element) {
 
                 return;
 
             }
 
-
             const value =
                 element.value.trim();
-
-
-            /*
-             * Optional Filter：
-             *
-             * 使用者沒有輸入的條件
-             * 不送出。
-             */
 
             if (value !== "") {
 
@@ -1072,12 +1459,15 @@ function buildSearchParams(
         }
     );
 
-
-    const pageSize =
+    const pageSizeElement =
         document.getElementById(
             "page_size"
-        ).value;
+        );
 
+    const pageSize =
+        pageSizeOverride !== null
+            ? String(pageSizeOverride)
+            : pageSizeElement.value;
 
     if (pageSize !== "") {
 
@@ -1088,24 +1478,201 @@ function buildSearchParams(
 
     }
 
-
     params.set(
         "page",
         page
     );
 
-
     return params;
+
 }
 
+async function fetchSearchPage(
+    page,
+    pageSizeOverride = null
+) {
 
+    const params =
+        buildSearchParams(
+            page,
+            pageSizeOverride
+        );
 
-/* ==================================================
-   Search Archive
-   ================================================== */
+    const requestUrl =
+        SEARCH_API +
+        "?" +
+        params.toString();
+
+    const response =
+        await fetch(
+            requestUrl,
+            {
+                method: "GET",
+
+                headers: {
+                    "Accept":
+                        "application/json"
+                }
+            }
+        );
+
+    const contentType =
+        response.headers.get(
+            "content-type"
+        ) || "";
+
+    const raw =
+        await response.text();
+
+    if (!response.ok) {
+
+        let detail =
+            "Search API request failed";
+
+        try {
+
+            const errorData =
+                JSON.parse(
+                    raw
+                );
+
+            detail =
+                errorData.detail ||
+                errorData.message ||
+                detail;
+
+        }
+        catch (
+            ignored
+        ) {
+
+            if (raw.trim() !== "") {
+
+                detail =
+                    raw.substring(
+                        0,
+                        300
+                    );
+
+            }
+
+        }
+
+        throw new Error(
+            detail
+        );
+
+    }
+
+    if (
+        !contentType.includes(
+            "application/json"
+        )
+    ) {
+
+        console.error(
+            "Unexpected Content-Type:",
+            contentType
+        );
+
+        console.error(
+            "Response:",
+            raw
+        );
+
+        throw new Error(
+            "Search API 回傳的不是 JSON。"
+            +
+            " 請確認 /archive/search/api "
+            +
+            "是否正確註冊為 API Route。"
+        );
+
+    }
+
+    try {
+
+        return JSON.parse(
+            raw
+        );
+
+    }
+    catch (
+        jsonError
+    ) {
+
+        console.error(
+            "Invalid JSON response:",
+            raw
+        );
+
+        throw new Error(
+            "Search API JSON 格式錯誤。"
+        );
+
+    }
+
+}
+
+async function loadFullSearchScope(
+    firstPageData
+) {
+
+    const total =
+        Number(
+            firstPageData.total || 0
+        );
+
+    if (
+        total <= 0
+    ) {
+
+        return [];
+
+    }
+
+    const scopePageSize =
+        100;
+
+    const totalPages =
+        Math.ceil(
+            total /
+            scopePageSize
+        );
+
+    const allUrls = [];
+
+    for (
+        let page = 1;
+        page <= totalPages;
+        page++
+    ) {
+
+        const data =
+            await fetchSearchPage(
+                page,
+                scopePageSize
+            );
+
+        allUrls.push(
+            ...extractUrls(
+                data.results
+            )
+        );
+
+    }
+
+    return [
+        ...new Set(
+            allUrls
+        )
+    ];
+
+}
 
 async function searchArchive(
-    page = 1
+    page = 1,
+    isNewSearch = false
 ) {
 
     const status =
@@ -1138,17 +1705,14 @@ async function searchArchive(
             "search-button"
         );
 
-
     status.className =
         "status";
 
     status.textContent =
         "Searching...";
 
-
     results.innerHTML =
         '<div class="loading">Searching Archive...</div>';
-
 
     resultInfo.innerHTML =
         "";
@@ -1159,196 +1723,51 @@ async function searchArchive(
     pagination.innerHTML =
         "";
 
-
     searchButton.disabled =
         true;
 
+    if (
+        isNewSearch
+    ) {
+
+        archiveSearchScope =
+            null;
+
+        updateChatbotScopeDisplay();
+
+    }
 
     try {
 
-
-        /*
-         * Build Query
-         */
-
-        const params =
-            buildSearchParams(
+        const data =
+            await fetchSearchPage(
                 page
             );
 
-
-        const requestUrl =
-            SEARCH_API +
-            "?" +
-            params.toString();
-
-
-        /*
-         * Request JSON API
-         */
-
-        const response =
-            await fetch(
-                requestUrl,
-                {
-                    method: "GET",
-
-                    headers: {
-                        "Accept":
-                            "application/json"
-                    }
-                }
-            );
-
-
-        /*
-         * Content-Type Check
-         *
-         * 避免把 HTML 頁面誤當 JSON。
-         */
-
-        const contentType =
-            response.headers.get(
-                "content-type"
-            ) || "";
-
-
-        /*
-         * Read raw response first
-         */
-
-        const raw =
-            await response.text();
-
-
-        /*
-         * HTTP Error
-         */
-
-        if (!response.ok) {
-
-            let detail =
-                "Search API request failed";
-
-
-            try {
-
-                const errorData =
-                    JSON.parse(
-                        raw
-                    );
-
-
-                detail =
-                    errorData.detail ||
-                    errorData.message ||
-                    detail;
-
-            }
-            catch (
-                ignored
-            ) {
-
-                if (raw.trim() !== "") {
-
-                    detail =
-                        raw.substring(
-                            0,
-                            300
-                        );
-
-                }
-
-            }
-
-
-            throw new Error(
-                detail
-            );
-
-        }
-
-
-        /*
-         * JSON Validation
-         */
-
         if (
-            !contentType.includes(
-                "application/json"
-            )
+            isNewSearch
         ) {
 
-            console.error(
-                "Unexpected Content-Type:",
-                contentType
-            );
-
-            console.error(
-                "Response:",
-                raw
-            );
-
-
-            throw new Error(
-                "Search API 回傳的不是 JSON。"
-                +
-                " 請確認 /archive/search/api "
-                +
-                "是否正確註冊為 API Route。"
-            );
-
-        }
-
-
-        /*
-         * Parse JSON
-         */
-
-        let data;
-
-
-        try {
-
-            data =
-                JSON.parse(
-                    raw
+            const fullScope =
+                await loadFullSearchScope(
+                    data
                 );
 
-        }
-        catch (
-            jsonError
-        ) {
-
-            console.error(
-                "Invalid JSON response:",
-                raw
-            );
-
-
-            throw new Error(
-                "Search API JSON 格式錯誤。"
+            updateArchiveSearchScope(
+                fullScope
             );
 
         }
-
-
-        /*
-         * Render
-         */
 
         renderSearchResults(
             data
         );
 
-
         status.className =
             "status success";
 
-
         status.textContent =
             "Search completed.";
-
 
     }
     catch (
@@ -1360,15 +1779,12 @@ async function searchArchive(
             error
         );
 
-
         status.className =
             "status error";
-
 
         status.textContent =
             "Search failed: " +
             error.message;
-
 
         results.innerHTML =
 
@@ -1390,12 +1806,6 @@ async function searchArchive(
 
 }
 
-
-
-/* ==================================================
-   Render Search Results
-   ================================================== */
-
 function renderSearchResults(
     data
 ) {
@@ -1405,31 +1815,15 @@ function renderSearchResults(
             "results"
         );
 
-
     const resultInfo =
         document.getElementById(
             "result-info"
         );
 
-
     const filterSummary =
         document.getElementById(
             "filter-summary"
         );
-
-
-    /*
-     * Expected Response:
-     *
-     * {
-     *   results: [],
-     *   total: 10,
-     *   page: 1,
-     *   page_size: 20,
-     *   filters: {}
-     * }
-     */
-
 
     const items =
         Array.isArray(
@@ -1438,28 +1832,20 @@ function renderSearchResults(
             ? data.results
             : [];
 
-
     const total =
         Number(
             data.total || 0
         );
-
 
     const page =
         Number(
             data.page || 1
         );
 
-
     const pageSize =
         Number(
             data.page_size || 20
         );
-
-
-    /*
-     * Result information
-     */
 
     resultInfo.innerHTML =
 
@@ -1478,14 +1864,8 @@ function renderSearchResults(
         escapeHtml(pageSize) +
         "</span>";
 
-
-    /*
-     * Active filters
-     */
-
     const filters =
         data.filters || {};
-
 
     const filterKeys =
         Object.keys(
@@ -1502,7 +1882,6 @@ function renderSearchResults(
 
             }
         );
-
 
     if (
         filterKeys.length > 0
@@ -1542,11 +1921,6 @@ function renderSearchResults(
 
     }
 
-
-    /*
-     * Empty
-     */
-
     if (
         items.length === 0
     ) {
@@ -1559,22 +1933,15 @@ function renderSearchResults(
 
             "</div>";
 
-
         renderPagination(
             page,
             pageSize,
             total
         );
 
-
         return;
 
     }
-
-
-    /*
-     * Render Articles
-     */
 
     resultsContainer.innerHTML =
         items
@@ -1585,11 +1952,6 @@ function renderSearchResults(
                 ""
             );
 
-
-    /*
-     * Pagination
-     */
-
     renderPagination(
         page,
         pageSize,
@@ -1597,12 +1959,6 @@ function renderSearchResults(
     );
 
 }
-
-
-
-/* ==================================================
-   Render Article
-   ================================================== */
 
 function renderArticle(
     article
@@ -1618,7 +1974,6 @@ function renderArticle(
         )
         || "Untitled Article";
 
-
     const url =
         getValue(
             article,
@@ -1628,7 +1983,6 @@ function renderArticle(
             ]
         );
 
-
     const source =
         getValue(
             article,
@@ -1636,7 +1990,6 @@ function renderArticle(
                 "source"
             ]
         );
-
 
     const published =
         getValue(
@@ -1650,7 +2003,6 @@ function renderArticle(
             ]
         );
 
-
     const category =
         getValue(
             article,
@@ -1659,7 +2011,6 @@ function renderArticle(
                 "ai_category"
             ]
         );
-
 
     const importance =
         getValue(
@@ -1670,14 +2021,6 @@ function renderArticle(
             ]
         );
 
-
-    /*
-     * AI Summary
-     *
-     * 預期由 Repository / Service
-     * 直接回傳 article.ai_summary
-     */
-
     const aiSummary =
         getValue(
             article,
@@ -1685,11 +2028,6 @@ function renderArticle(
                 "ai_summary"
             ]
         );
-
-
-    /*
-     * Original Content
-     */
 
     const content =
         getValue(
@@ -1700,67 +2038,15 @@ function renderArticle(
             ]
         );
 
-
-    /*
-     * Title
-     *
-     * ==================================================
-     * V5 Archive Viewer
-     * ==================================================
-     *
-     * 舊行為：
-     *
-     *     點擊文章標題
-     *         ↓
-     *     直接前往原始 URL
-     *
-     *
-     * 新行為：
-     *
-     *     點擊文章標題
-     *         ↓
-     *     /archive/view?url=<原始 URL>
-     *         ↓
-     *     Archive Viewer
-     *         ↓
-     *     MongoDB Snapshot History
-     *
-     *
-     * 注意：
-     *
-     *     原始 URL 仍然保留在 Search Result。
-     *
-     *     只有文章標題的導航行為改成
-     *     Archive Viewer。
-     *
-     * ==================================================
-     */
-
     let titleHtml;
 
-
     if (url) {
-
-        /*
-         * 建立 Archive Viewer URL。
-         *
-         * URLSearchParams / encodeURIComponent
-         * 確保原始 URL 中的：
-         *
-         *     ?
-         *     &
-         *     =
-         *     #
-         *
-         * 不會破壞 Viewer Query String。
-         */
 
         const viewerUrl =
             "/archive/view?url=" +
             encodeURIComponent(
                 String(url)
             );
-
 
         titleHtml =
 
@@ -1786,13 +2072,7 @@ function renderArticle(
 
     }
 
-
-    /*
-     * Badges
-     */
-
     let badges = "";
-
 
     if (source) {
 
@@ -1810,7 +2090,6 @@ function renderArticle(
 
     }
 
-
     if (category) {
 
         badges +=
@@ -1826,7 +2105,6 @@ function renderArticle(
             "</span>";
 
     }
-
 
     if (
         importance !== null &&
@@ -1847,13 +2125,7 @@ function renderArticle(
 
     }
 
-
-    /*
-     * AI Summary
-     */
-
     let aiSummaryHtml = "";
-
 
     if (
         aiSummary !== null &&
@@ -1881,25 +2153,7 @@ function renderArticle(
 
     }
 
-
-    /*
-     * URL
-     *
-     * 注意：
-     *
-     * URL 顯示仍然可以直接開啟原始網站。
-     *
-     * 本次修改只要求：
-     *
-     *     文章標題
-     *         ↓
-     *     Archive Viewer
-     *
-     * 因此 URL 欄位維持原本行為。
-     */
-
     let urlHtml = "";
-
 
     if (url) {
 
@@ -1927,11 +2181,6 @@ function renderArticle(
 
     }
 
-
-    /*
-     * Article HTML
-     */
-
     return `
 
         <div class="result">
@@ -1941,7 +2190,6 @@ function renderArticle(
                 ${titleHtml}
 
             </div>
-
 
             <div class="meta">
 
@@ -1954,19 +2202,15 @@ function renderArticle(
 
             </div>
 
-
             <div>
 
                 ${badges}
 
             </div>
 
-
             ${urlHtml}
 
-
             ${aiSummaryHtml}
-
 
             ${
                 content
@@ -1988,12 +2232,6 @@ function renderArticle(
 
 }
 
-
-
-/* ==================================================
-   Pagination
-   ================================================== */
-
 function renderPagination(
     page,
     pageSize,
@@ -2005,7 +2243,6 @@ function renderPagination(
             "pagination"
         );
 
-
     const totalPages =
         Math.max(
             1,
@@ -2015,18 +2252,16 @@ function renderPagination(
             )
         );
 
-
     pagination.innerHTML =
 
         `
 
         <button
-            onclick="searchArchive(${page - 1})"
+            onclick="searchArchive(${page - 1}, false)"
             ${page <= 1 ? "disabled" : ""}
         >
             Previous
         </button>
-
 
         <span class="page-info">
 
@@ -2037,9 +2272,8 @@ function renderPagination(
 
         </span>
 
-
         <button
-            onclick="searchArchive(${page + 1})"
+            onclick="searchArchive(${page + 1}, false)"
             ${
                 page >= totalPages
                     ? "disabled"
@@ -2053,11 +2287,503 @@ function renderPagination(
 
 }
 
+function toggleChatbot(
+    forceState = null
+) {
 
+    const panel =
+        document.getElementById(
+            "chatbot-panel"
+        );
 
-/* ==================================================
-   Reset Search
-   ================================================== */
+    const toggle =
+        document.getElementById(
+            "chatbot-toggle"
+        );
+
+    if (
+        forceState === null
+    ) {
+
+        chatbotOpen =
+            !chatbotOpen;
+
+    }
+    else {
+
+        chatbotOpen =
+            forceState;
+
+    }
+
+    if (
+        chatbotOpen
+    ) {
+
+        panel.classList.add(
+            "open"
+        );
+
+        toggle.style.display =
+            "none";
+
+        updateChatbotScopeDisplay();
+
+        document.getElementById(
+            "chatbot-input"
+        ).focus();
+
+    }
+    else {
+
+        panel.classList.remove(
+            "open"
+        );
+
+        toggle.style.display =
+            "flex";
+
+    }
+
+}
+
+function handleChatInputKeydown(
+    event
+) {
+
+    if (
+        event.key === "Enter" &&
+        !event.shiftKey
+    ) {
+
+        event.preventDefault();
+
+        sendChatMessage();
+
+    }
+
+}
+
+function appendChatMessage(
+    role,
+    content,
+    sources = []
+) {
+
+    const messages =
+        document.getElementById(
+            "chatbot-messages"
+        );
+
+    const message =
+        document.createElement(
+            "div"
+        );
+
+    message.className =
+        "chat-message " +
+        role;
+
+    const contentElement =
+        document.createElement(
+            "div"
+        );
+
+    contentElement.className =
+        "chat-message-content";
+
+    contentElement.textContent =
+        content;
+
+    message.appendChild(
+        contentElement
+    );
+
+    if (
+        role === "assistant" &&
+        Array.isArray(sources) &&
+        sources.length > 0
+    ) {
+
+        const sourcesElement =
+            document.createElement(
+                "div"
+            );
+
+        sourcesElement.className =
+            "chat-sources";
+
+        const title =
+            document.createElement(
+                "div"
+            );
+
+        title.className =
+            "chat-sources-title";
+
+        title.textContent =
+            "Sources";
+
+        sourcesElement.appendChild(
+            title
+        );
+
+        sources.forEach(
+            function(source) {
+
+                const sourceElement =
+                    document.createElement(
+                        "div"
+                    );
+
+                sourceElement.className =
+                    "chat-source";
+
+                const sourceIndex =
+                    getValue(
+                        source,
+                        [
+                            "source_index"
+                        ]
+                    );
+
+                const titleValue =
+                    getValue(
+                        source,
+                        [
+                            "title"
+                        ]
+                    )
+                    || "Untitled Source";
+
+                const url =
+                    getValue(
+                        source,
+                        [
+                            "url"
+                        ]
+                    );
+
+                let label =
+                    "";
+
+                if (
+                    sourceIndex !== null &&
+                    sourceIndex !== undefined
+                ) {
+
+                    label +=
+                        "[Source " +
+                        sourceIndex +
+                        "] ";
+
+                }
+
+                label +=
+                    titleValue;
+
+                if (url) {
+
+                    sourceElement.innerHTML =
+
+                        escapeHtml(
+                            label
+                        ) +
+                        " - " +
+                        '<a href="' +
+                        escapeHtml(url) +
+                        '" target="_blank" rel="noopener noreferrer">' +
+                        escapeHtml(url) +
+                        "</a>";
+
+                }
+                else {
+
+                    sourceElement.textContent =
+                        label;
+
+                }
+
+                sourcesElement.appendChild(
+                    sourceElement
+                );
+
+            }
+        );
+
+        message.appendChild(
+            sourcesElement
+        );
+
+    }
+
+    messages.appendChild(
+        message
+    );
+
+    messages.scrollTop =
+        messages.scrollHeight;
+
+}
+
+async function sendChatMessage() {
+
+    const input =
+        document.getElementById(
+            "chatbot-input"
+        );
+
+    const sendButton =
+        document.getElementById(
+            "chatbot-send"
+        );
+
+    const query =
+        input.value.trim();
+
+    if (
+        query === ""
+    ) {
+
+        return;
+
+    }
+
+    appendChatMessage(
+        "user",
+        query
+    );
+
+    input.value =
+        "";
+
+    sendButton.disabled =
+        true;
+
+    appendChatMessage(
+        "assistant",
+        "Thinking..."
+    );
+
+    const messages =
+        document.getElementById(
+            "chatbot-messages"
+        );
+
+    const thinkingMessage =
+        messages.lastElementChild;
+
+    try {
+
+        const requestBody = {
+
+            query: query,
+
+            urls:
+                getArchiveSearchScope()
+
+        };
+
+        const response =
+            await fetch(
+                RAG_API,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json",
+
+                        "Accept":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            requestBody
+                        )
+                }
+            );
+
+        const contentType =
+            response.headers.get(
+                "content-type"
+            ) || "";
+
+        const raw =
+            await response.text();
+
+        if (!response.ok) {
+
+            let detail =
+                "RAG API request failed";
+
+            try {
+
+                const errorData =
+                    JSON.parse(
+                        raw
+                    );
+
+                detail =
+                    errorData.detail ||
+                    errorData.message ||
+                    detail;
+
+            }
+            catch (
+                ignored
+            ) {
+
+                if (
+                    raw.trim() !== ""
+                ) {
+
+                    detail =
+                        raw.substring(
+                            0,
+                            300
+                        );
+
+                }
+
+            }
+
+            throw new Error(
+                detail
+            );
+
+        }
+
+        if (
+            !contentType.includes(
+                "application/json"
+            )
+        ) {
+
+            throw new Error(
+                "RAG API 回傳的不是 JSON。"
+            );
+
+        }
+
+        let data;
+
+        try {
+
+            data =
+                JSON.parse(
+                    raw
+                );
+
+        }
+        catch (
+            jsonError
+        ) {
+
+            throw new Error(
+                "RAG API JSON 格式錯誤。"
+            );
+
+        }
+
+        if (
+            thinkingMessage
+        ) {
+
+            thinkingMessage.remove();
+
+        }
+
+        const answer =
+            getValue(
+                data,
+                [
+                    "answer"
+                ]
+            )
+            || "";
+
+        const sources =
+            Array.isArray(
+                data.sources
+            )
+                ? data.sources
+                : [];
+
+        appendChatMessage(
+            "assistant",
+            answer !== ""
+                ? answer
+                : "目前沒有可用的回答。",
+            sources
+        );
+
+    }
+    catch (
+        error
+    ) {
+
+        if (
+            thinkingMessage
+        ) {
+
+            thinkingMessage.remove();
+
+        }
+
+        console.error(
+            "RAG Chat Error:",
+            error
+        );
+
+        const messages =
+            document.getElementById(
+                "chatbot-messages"
+            );
+
+        const message =
+            document.createElement(
+                "div"
+            );
+
+        message.className =
+            "chat-message error";
+
+        const content =
+            document.createElement(
+                "div"
+            );
+
+        content.className =
+            "chat-message-content";
+
+        content.textContent =
+            "Chatbot failed: " +
+            error.message;
+
+        message.appendChild(
+            content
+        );
+
+        messages.appendChild(
+            message
+        );
+
+        messages.scrollTop =
+            messages.scrollHeight;
+
+    }
+    finally {
+
+        sendButton.disabled =
+            false;
+
+        input.focus();
+
+    }
+
+}
 
 function resetSearch() {
 
@@ -2085,7 +2811,6 @@ function resetSearch() {
 
     ];
 
-
     fields.forEach(
         function(field) {
 
@@ -2093,7 +2818,6 @@ function resetSearch() {
                 document.getElementById(
                     field
                 );
-
 
             if (element) {
 
@@ -2105,30 +2829,25 @@ function resetSearch() {
         }
     );
 
-
     document.getElementById(
         "page_size"
     ).value =
         "20";
-
 
     document.getElementById(
         "status"
     ).textContent =
         "";
 
-
     document.getElementById(
         "result-info"
     ).innerHTML =
         "";
 
-
     document.getElementById(
         "filter-summary"
     ).innerHTML =
         "";
-
 
     document.getElementById(
         "results"
@@ -2140,23 +2859,26 @@ function resetSearch() {
 
         "</div>";
 
-
     document.getElementById(
         "pagination"
     ).innerHTML =
         "";
 
+    archiveSearchScope =
+        null;
+
+    updateChatbotScopeDisplay();
+
 }
-
-
-
-/* ==================================================
-   Initial State
-   ================================================== */
 
 document.addEventListener(
     "DOMContentLoaded",
     function() {
+
+        archiveSearchScope =
+            null;
+
+        updateChatbotScopeDisplay();
 
         document.getElementById(
             "results"
@@ -2171,9 +2893,7 @@ document.addEventListener(
     }
 );
 
-
 </script>
-
 
 </body>
 

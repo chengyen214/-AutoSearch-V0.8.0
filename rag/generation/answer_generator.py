@@ -50,20 +50,8 @@ class AnswerGenerator:
         Source References
     """
 
-    # ========================================================
     # Source Reference Pattern
-    #
-    # 支援：
-    #
-    #     [Source 1]
-    #     [Source 2]
-    #
-    # 以及：
-    #
-    #     【Source 1】
-    #     【Source 2】
-    #
-    # ========================================================
+    # 支援 [Source 1]、[Source 2]、【Source 1】、【Source 2】
 
     SOURCE_PATTERN = re.compile(
         r"(?:\[|【)Source\s+(\d+)(?:\]|】)",
@@ -119,10 +107,6 @@ class AnswerGenerator:
             "source_references": source_references,
         }
 
-    # ========================================================
-    # Answer Text
-    # ========================================================
-
     @staticmethod
     def _build_answer_text(
         llm_response,
@@ -135,10 +119,6 @@ class AnswerGenerator:
         """
 
         return llm_response.strip()
-
-    # ========================================================
-    # Source References
-    # ========================================================
 
     def _build_source_references(
         self,
@@ -211,10 +191,6 @@ class AnswerGenerator:
 
         return source_references
 
-    # ========================================================
-    # Source Parsing
-    # ========================================================
-
     def _extract_source_indexes(
         self,
         answer_text,
@@ -229,7 +205,6 @@ class AnswerGenerator:
 
             【Source 1】
             【Source 2】
-
         """
 
         matches = (
@@ -245,16 +220,11 @@ class AnswerGenerator:
             source_index = int(match)
 
             if source_index not in source_indexes:
-
                 source_indexes.append(
                     source_index
                 )
 
         return source_indexes
-
-    # ========================================================
-    # Validation
-    # ========================================================
 
     @staticmethod
     def _validate_llm_response(
@@ -265,7 +235,6 @@ class AnswerGenerator:
         """
 
         if llm_response is None:
-
             raise ValueError(
                 "llm_response cannot be None"
             )
@@ -274,13 +243,11 @@ class AnswerGenerator:
             llm_response,
             str,
         ):
-
             raise TypeError(
                 "llm_response must be a string"
             )
 
         if not llm_response.strip():
-
             raise ValueError(
                 "llm_response cannot be empty"
             )
@@ -294,7 +261,6 @@ class AnswerGenerator:
         """
 
         if context is None:
-
             raise ValueError(
                 "context cannot be None"
             )
@@ -303,7 +269,6 @@ class AnswerGenerator:
             context,
             dict,
         ):
-
             raise TypeError(
                 "context must be a dictionary"
             )
@@ -317,7 +282,6 @@ class AnswerGenerator:
         for field in required_fields:
 
             if field not in context:
-
                 raise ValueError(
                     f"context missing required field: "
                     f"{field}"
@@ -329,13 +293,11 @@ class AnswerGenerator:
             entries,
             list,
         ):
-
             raise TypeError(
                 "context entries must be a list"
             )
 
         if context["count"] != len(entries):
-
             raise ValueError(
                 "context count does not match "
                 "entries length"
@@ -347,7 +309,6 @@ class AnswerGenerator:
                 entry,
                 dict,
             ):
-
                 raise TypeError(
                     "context entry must be a dictionary"
                 )
@@ -364,7 +325,6 @@ class AnswerGenerator:
             for field in required_entry_fields:
 
                 if field not in entry:
-
                     raise ValueError(
                         "context entry missing "
                         f"required field: {field}"

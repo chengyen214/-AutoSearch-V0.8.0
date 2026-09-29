@@ -17,7 +17,7 @@ Retrieval Result
 
     RAG-5.2 Query Embedding
             ↓
-    RAG-5.3 Candidate Retrieval
+    RAG-5.3 ChromaDB Candidate Retrieval
             ↓
     RAG-5.4 Final Top-K
             ↓
@@ -50,17 +50,9 @@ RetrievalResult：
 """
 
 
-# ============================================================
-# Imports
-# ============================================================
-
 from dataclasses import dataclass
 from math import isfinite
 
-
-# ============================================================
-# Retrieval Result
-# ============================================================
 
 @dataclass(frozen=True)
 class RetrievalResult:
@@ -100,18 +92,14 @@ class RetrievalResult:
     chunk_index: int
     metadata: dict
 
-    # ========================================================
     # Post Init Validation
-    # ========================================================
 
     def __post_init__(self):
         """
         建立 RetrievalResult 時進行基本資料驗證。
         """
 
-        # ----------------------------------------------------
         # Chunk
-        # ----------------------------------------------------
 
         if not isinstance(
             self.chunk,
@@ -126,9 +114,7 @@ class RetrievalResult:
                 "chunk cannot be empty."
             )
 
-        # ----------------------------------------------------
         # Distance
-        # ----------------------------------------------------
 
         if not isinstance(
             self.distance,
@@ -145,9 +131,7 @@ class RetrievalResult:
                 "distance must be finite."
             )
 
-        # ----------------------------------------------------
         # Similarity
-        # ----------------------------------------------------
 
         if self.similarity is not None:
 
@@ -167,9 +151,7 @@ class RetrievalResult:
                     "similarity must be finite."
                 )
 
-        # ----------------------------------------------------
         # Document ID
-        # ----------------------------------------------------
 
         if not isinstance(
             self.document_id,
@@ -184,9 +166,7 @@ class RetrievalResult:
                 "document_id cannot be empty."
             )
 
-        # ----------------------------------------------------
         # Chunk Index
-        # ----------------------------------------------------
 
         if not isinstance(
             self.chunk_index,
@@ -201,9 +181,7 @@ class RetrievalResult:
                 "chunk_index must be >= 0."
             )
 
-        # ----------------------------------------------------
         # Metadata
-        # ----------------------------------------------------
 
         if not isinstance(
             self.metadata,
@@ -239,9 +217,7 @@ class RetrievalResult:
                     "metadata.document_id."
                 )
 
-    # ========================================================
     # Getters
-    # ========================================================
 
     def get_chunk(self):
         """
@@ -286,10 +262,6 @@ class RetrievalResult:
         return self.metadata
 
 
-# ============================================================
-# Retrieval Result Builder
-# ============================================================
-
 class RetrievalResultBuilder:
     """
     RAG-5.5 Retrieval Result Builder。
@@ -317,9 +289,7 @@ class RetrievalResultBuilder:
 
     RECORD_ID_SEPARATOR = "::chunk_"
 
-    # ========================================================
     # Validate Raw Result
-    # ========================================================
 
     @staticmethod
     def _validate_raw_result(
@@ -381,9 +351,7 @@ class RetrievalResultBuilder:
                 "must have equal lengths."
             )
 
-    # ========================================================
     # Parse Record ID
-    # ========================================================
 
     @classmethod
     def _parse_record_id(
@@ -461,9 +429,7 @@ class RetrievalResultBuilder:
             chunk_index
         )
 
-    # ========================================================
     # Build Single Result
-    # ========================================================
 
     @classmethod
     def build_one(
@@ -519,9 +485,7 @@ class RetrievalResultBuilder:
             metadata=metadata,
         )
 
-    # ========================================================
     # Build All Results
-    # ========================================================
 
     @classmethod
     def build(
@@ -556,9 +520,7 @@ class RetrievalResultBuilder:
 
         result_count = len(ids)
 
-        # ----------------------------------------------------
         # Validate Similarities
-        # ----------------------------------------------------
 
         if similarities is not None:
 
@@ -578,9 +540,7 @@ class RetrievalResultBuilder:
                     "retrieval result count."
                 )
 
-        # ----------------------------------------------------
         # Build Results
-        # ----------------------------------------------------
 
         results = []
 
@@ -612,9 +572,7 @@ class RetrievalResultBuilder:
 
         return results
 
-    # ========================================================
     # Result Count
-    # ========================================================
 
     @staticmethod
     def count(
@@ -634,10 +592,6 @@ class RetrievalResultBuilder:
 
         return len(results)
 
-
-# ============================================================
-# Public API
-# ============================================================
 
 __all__ = [
     "RetrievalResult",

@@ -36,9 +36,7 @@ class TopKRetrieval:
     RAG-5.4 Final Top-K Retrieval。
     """
 
-    # ==================================================
     # Initialize
-    # ==================================================
 
     def __init__(
         self,
@@ -75,9 +73,7 @@ class TopKRetrieval:
 
         self.top_k = top_k
 
-    # ==================================================
     # Validate Result
-    # ==================================================
 
     @staticmethod
     def _validate_result(
@@ -117,9 +113,7 @@ class TopKRetrieval:
 
         return True
 
-    # ==================================================
     # Get First Group
-    # ==================================================
 
     @staticmethod
     def _get_first_group(
@@ -168,9 +162,7 @@ class TopKRetrieval:
 
         return first_group
 
-    # ==================================================
     # Select Final Top-K
-    # ==================================================
 
     def select(
         self,
@@ -250,9 +242,7 @@ class TopKRetrieval:
                 "Retrieval result count mismatch."
             )
 
-        # ==================================================
         # Final Top-K
-        # ==================================================
 
         return {
             "ids": ids[:top_k],
@@ -261,9 +251,7 @@ class TopKRetrieval:
             "distances": distances[:top_k],
         }
 
-    # ==================================================
     # Top-K
-    # ==================================================
 
     def get_top_k(
         self

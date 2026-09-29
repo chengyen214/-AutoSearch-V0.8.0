@@ -24,6 +24,7 @@ ChromaDB Candidate Retrieval
     2. Query Embedding
     3. ChromaDB Similarity Search
     4. 取得 Candidate Results
+    5. URL Scoped Retrieval
 
 本階段不負責：
 
@@ -50,9 +51,7 @@ class ChromaDBRetrieval:
     RAG-5.3 ChromaDB Candidate Retrieval。
     """
 
-    # ==================================================
     # Initialize
-    # ==================================================
 
     def __init__(
         self,
@@ -130,9 +129,7 @@ class ChromaDBRetrieval:
             self._get_collection()
         )
 
-    # ==================================================
     # Get Collection
-    # ==================================================
 
     def _get_collection(
         self
@@ -162,9 +159,7 @@ class ChromaDBRetrieval:
 
         return collection
 
-    # ==================================================
     # Validate Query
-    # ==================================================
 
     @staticmethod
     def _validate_query(
@@ -196,9 +191,52 @@ class ChromaDBRetrieval:
 
         return query
 
-    # ==================================================
+    # Validate URLs
+
+    @staticmethod
+    def _validate_urls(
+        urls
+    ):
+        """
+        驗證 URL Scope。
+        """
+
+        if urls is None:
+            return None
+
+        if not isinstance(
+            urls,
+            list,
+        ):
+            raise TypeError(
+                "urls must be a list."
+            )
+
+        validated_urls = []
+
+        for url in urls:
+            if not isinstance(
+                url,
+                str,
+            ):
+                raise TypeError(
+                    "Each URL must be a str."
+                )
+
+            url = url.strip()
+
+            if not url:
+                raise ValueError(
+                    "URL cannot be empty."
+                )
+
+            validated_urls.append(
+                url
+            )
+
+        return validated_urls
+
     # Validate Query Embedding
-    # ==================================================
 
     def _validate_query_embedding(
         self,
@@ -233,14 +271,13 @@ class ChromaDBRetrieval:
 
         return True
 
-    # ==================================================
     # Retrieve Candidates
-    # ==================================================
 
     def retrieve(
         self,
         query,
         candidate_k=None,
+        urls=None,
     ):
         """
         執行 ChromaDB Candidate Retrieval。
@@ -253,6 +290,18 @@ class ChromaDBRetrieval:
         candidate_k:
             可覆寫預設 Candidate K。
 
+        urls:
+            Archive URL Scope。
+
+            None:
+                不限制 Archive 範圍。
+
+            list:
+                僅檢索指定 URL。
+
+            []:
+                不進行 Retrieval，回傳空結果。
+
         Returns
         -------
         dict
@@ -264,10 +313,13 @@ class ChromaDBRetrieval:
             query
         )
 
+        urls = self._validate_urls(
+            urls
+        )
+
         if candidate_k is None:
             candidate_k = self.candidate_k
         else:
-
             try:
                 candidate_k = int(
                     candidate_k
@@ -285,9 +337,15 @@ class ChromaDBRetrieval:
                     "candidate_k must be greater than 0."
                 )
 
-        # ==================================================
+        if urls == []:
+            return {
+                "ids": [[]],
+                "documents": [[]],
+                "metadatas": [[]],
+                "distances": [[]],
+            }
+
         # RAG-5.2
-        # ==================================================
 
         query_vector = (
             self.query_embedding.embed(
@@ -299,22 +357,30 @@ class ChromaDBRetrieval:
             query_vector
         )
 
-        # ==================================================
         # RAG-5.3
-        # ChromaDB Candidate Retrieval
-        # ==================================================
+
+        query_parameters = {
+            "query_embeddings": [
+                query_vector
+            ],
+            "n_results": candidate_k,
+            "include": [
+                "documents",
+                "metadatas",
+                "distances",
+            ],
+        }
+
+        if urls is not None:
+            query_parameters["where"] = {
+                "url": {
+                    "$in": urls
+                }
+            }
 
         result = (
             self.collection.query(
-                query_embeddings=[
-                    query_vector
-                ],
-                n_results=candidate_k,
-                include=[
-                    "documents",
-                    "metadatas",
-                    "distances",
-                ],
+                **query_parameters
             )
         )
 
@@ -325,9 +391,7 @@ class ChromaDBRetrieval:
 
         return result
 
-    # ==================================================
     # Candidate K
-    # ==================================================
 
     def get_candidate_k(
         self
@@ -338,9 +402,7 @@ class ChromaDBRetrieval:
 
         return self.candidate_k
 
-    # ==================================================
     # Dimension
-    # ==================================================
 
     def get_dimension(
         self

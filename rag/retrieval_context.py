@@ -4,49 +4,7 @@ rag/retrieval_context.py
 AutoSearch V7
 
 RAG-5 → RAG-6 Integration
-
-功能：
-
-    提供 RAG-5 Retrieval 與 RAG-6 Context
-    之間的統一整合入口。
-
-資料流程：
-
-    User Query
-        ↓
-    RAG-5 Retriever
-        ↓
-    List[RetrievalResult]
-        ↓
-    RAG-6 ContextBuilder
-        ↓
-    Context
-
-本檔案負責：
-
-    1. 建立 RAG-5 RAGRetriever
-    2. 建立 RAG-6 ContextBuilder
-    3. 串接 RAG-5 → RAG-6
-    4. 提供單一 retrieval_to_context() 使用入口
-
-本檔案不負責：
-
-    1. Query Embedding
-    2. ChromaDB Retrieval
-    3. Top-K Selection
-    4. RetrievalResult 建立
-    5. Context Formatting
-    6. Metadata Handling
-    7. Context Ordering
-    8. Context Validation
-    9. LLM
-    10. Prompt
 """
-
-
-# ============================================================
-# Imports
-# ============================================================
 
 from rag.retriever.retriever import (
     RAGRetriever,
@@ -57,28 +15,13 @@ from rag.context.context_builder import (
 )
 
 
-# ============================================================
-# Retrieval Context
-# ============================================================
-
 class RetrievalContext:
     """
     RAG-5 → RAG-6 整合入口。
 
-    負責將：
-
-        User Query
-            ↓
-        RAG-5 RetrievalResult
-            ↓
-        RAG-6 Context
-
-    串接成單一 API。
+    負責將 User Query、RAG-5 RetrievalResult
+    與 RAG-6 Context 串接成單一 API。
     """
-
-    # ========================================================
-    # Initialize
-    # ========================================================
 
     def __init__(
         self,
@@ -107,38 +50,28 @@ class RetrievalContext:
 
         self.context_builder = context_builder
 
-    # ========================================================
-    # Query → Context
-    # ========================================================
-
     def build(
         self,
         query,
+        urls=None,
     ):
         """
         執行完整 RAG-5 → RAG-6 流程。
 
-        Flow：
+        urls=None:
+            不限制 Archive 範圍。
 
-            Query
-                ↓
-            RAG-5 Retriever
-                ↓
-            List[RetrievalResult]
-                ↓
-            RAG-6 ContextBuilder
-                ↓
-            Context
+        urls=[...]:
+            僅檢索指定 URL。
 
-        Returns
-        -------
-        dict
-            RAG-6 Context。
+        urls=[]:
+            不取得任何 Retrieval Result。
         """
 
         retrieval_results = (
             self.retriever.search(
-                query
+                query,
+                urls=urls,
             )
         )
 
@@ -149,10 +82,6 @@ class RetrievalContext:
         )
 
         return context
-
-    # ========================================================
-    # Component Getters
-    # ========================================================
 
     def get_retriever(
         self,
@@ -172,10 +101,6 @@ class RetrievalContext:
 
         return self.context_builder
 
-
-# ============================================================
-# Public API
-# ============================================================
 
 __all__ = [
     "RetrievalContext",

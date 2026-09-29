@@ -10,7 +10,6 @@ Raw HTML Repository
     使用 MongoDB 儲存 CrawlService
     取得的原始 HTML Snapshot。
 
-
 V5 Pipeline：
 
     SearchResult
@@ -36,7 +35,6 @@ V5 Pipeline：
         v
     ArchiveService
 
-
 Crawl 階段：
 
     尚未建立 Article。
@@ -55,7 +53,6 @@ Crawl 階段：
         resources
         created_at
 
-
 Resources：
 
     CrawlService 在取得 Raw HTML 後
@@ -70,7 +67,6 @@ Resources：
         CrawlResult.resources
                 ↓
         MongoDB raw_html.resources
-
 
 MongoDB Raw HTML Structure：
 
@@ -88,7 +84,6 @@ MongoDB Raw HTML Structure：
         ├── css[]
         └── images[]
 
-
 Archive：
 
     article_id：
@@ -100,7 +95,6 @@ Archive：
         article_id
         不參與 Duplicate Detection。
 
-
 Duplicate Lookup：
 
     URL
@@ -109,7 +103,6 @@ Duplicate Lookup：
 
     由 ArchiveService 負責
     Duplicate Decision。
-
 
 Archive Web Page：
 
@@ -133,24 +126,20 @@ Archive Web Page：
         v
     自己的 Archive Web Page
 
-
 版本列表只需要顯示：
 
     2026-08-29 14:20
     2026-08-28 14:15
     2026-08-25 09:32
 
-
 V5 datetime policy：
 
     所有 created_at / updated_at
     一律使用 timezone-aware UTC datetime。
 
-
     Naive datetime：
 
         視為 UTC
-
 
     ISO 8601：
 
@@ -158,11 +147,9 @@ V5 datetime policy：
             ↓
         timezone-aware UTC datetime
 
-
     Timezone-aware datetime：
 
         自動轉換為 UTC。
-
 
 本 Repository 不負責：
 
@@ -178,37 +165,15 @@ V5 datetime policy：
     - Web UI
 """
 
-
-# ==================================================
-#
-# Standard Library
-#
-# ==================================================
-
 from datetime import (
     datetime,
     timezone,
 )
 
-
-# ==================================================
-#
-# MongoDB
-#
-# ==================================================
-
 from bson import ObjectId
-
 from pymongo.errors import (
     PyMongoError,
 )
-
-
-# ==================================================
-#
-# Project
-#
-# ==================================================
 
 from config.mongo_config import (
     MONGO_RAW_HTML_COLLECTION,
@@ -223,12 +188,6 @@ from utils.logger import (
 )
 
 
-# ==================================================
-#
-# Raw HTML Repository
-#
-# ==================================================
-
 class RawHTMLRepository:
     """
     MongoDB Raw HTML Repository。
@@ -240,7 +199,6 @@ class RawHTMLRepository:
         Raw HTML Snapshot
             ↓
         MongoDB
-
 
     Raw HTML Snapshot：
 
@@ -254,14 +212,12 @@ class RawHTMLRepository:
         created_at
         updated_at
 
-
     Resources：
 
         {
             "css": [],
             "images": []
         }
-
 
     Archive Viewer 所需的核心查詢：
 
@@ -272,7 +228,6 @@ class RawHTMLRepository:
         URL + created_at
             ↓
         指定 Raw HTML
-
 
     Repository 不負責：
 
@@ -285,30 +240,14 @@ class RawHTMLRepository:
         - Web UI
     """
 
-    # ==================================================
-    # Initialize
-    # ==================================================
-
-    def __init__(
-        self
-    ):
-
-        self.collection = (
-            get_mongo_collection(
-                MONGO_RAW_HTML_COLLECTION
-            )
+    def __init__(self):
+        self.collection = get_mongo_collection(
+            MONGO_RAW_HTML_COLLECTION
         )
-
         self._ensure_indexes()
 
-    # ==================================================
-    # Normalize Datetime
-    # ==================================================
-
     @staticmethod
-    def _normalize_datetime(
-        value
-    ):
+    def _normalize_datetime(value):
         """
         將 datetime / ISO 8601
         統一轉換為 timezone-aware UTC datetime。
@@ -320,13 +259,11 @@ class RawHTMLRepository:
             ISO 8601 + Z
             ISO 8601 + timezone offset
 
-
         規則：
 
             timezone-aware datetime
                 ↓
             轉換為 UTC
-
 
             naive datetime
                 ↓
@@ -334,26 +271,15 @@ class RawHTMLRepository:
         """
 
         if value is None:
-
             return None
 
-        # --------------------------------------------------
-        # String
-        # --------------------------------------------------
-
-        if isinstance(
-            value,
-            str,
-        ):
-
+        if isinstance(value, str):
             value = value.strip()
 
             if not value:
-
                 return None
 
             try:
-
                 value = datetime.fromisoformat(
                     value.replace(
                         "Z",
@@ -365,62 +291,30 @@ class RawHTMLRepository:
                 TypeError,
                 ValueError,
             ):
-
                 logger.warning(
                     "Invalid datetime: "
                     f"{value}"
                 )
-
                 return None
 
-        # --------------------------------------------------
-        # Validate datetime
-        # --------------------------------------------------
-
-        if not isinstance(
-            value,
-            datetime,
-        ):
-
+        if not isinstance(value, datetime):
             logger.warning(
                 "Unsupported datetime type: "
                 f"{type(value)}"
             )
-
             return None
 
-        # --------------------------------------------------
-        # Naive datetime
-        #
-        # V5：
-        #
-        # Naive datetime 一律視為 UTC。
-        # --------------------------------------------------
-
         if value.tzinfo is None:
-
             return value.replace(
                 tzinfo=timezone.utc,
             )
-
-        # --------------------------------------------------
-        # Timezone-aware datetime
-        #
-        # Normalize to UTC.
-        # --------------------------------------------------
 
         return value.astimezone(
             timezone.utc,
         )
 
-    # ==================================================
-    # Normalize Resources
-    # ==================================================
-
     @staticmethod
-    def _normalize_resources(
-        resources
-    ):
+    def _normalize_resources(resources):
         """
         Normalize CrawlResult.resources。
 
@@ -431,66 +325,24 @@ class RawHTMLRepository:
                 "images": []
             }
 
-
-        規則：
-
-            None
-                ↓
-            空 Resources
-
-
-            非 dict
-                ↓
-            空 Resources
-
-
-            缺少 css / images
-                ↓
-            自動補空 list
-
-
-        Repository 不負責：
-
-            Resource Download
-            Resource Validation
-            Resource Deduplication
-
-        只負責建立穩定的 MongoDB Structure。
+        None 或無效格式會轉換成空 Resources。
         """
 
-        # --------------------------------------------------
-        # None
-        # --------------------------------------------------
-
         if resources is None:
-
             return {
                 "css": [],
                 "images": [],
             }
 
-        # --------------------------------------------------
-        # Invalid Type
-        # --------------------------------------------------
-
-        if not isinstance(
-            resources,
-            dict,
-        ):
-
+        if not isinstance(resources, dict):
             logger.warning(
                 "Invalid resources type: "
                 f"type={type(resources).__name__}"
             )
-
             return {
                 "css": [],
                 "images": [],
             }
-
-        # --------------------------------------------------
-        # CSS
-        # --------------------------------------------------
 
         css = resources.get(
             "css",
@@ -498,24 +350,14 @@ class RawHTMLRepository:
         )
 
         if css is None:
-
             css = []
 
-        elif not isinstance(
-            css,
-            list,
-        ):
-
+        elif not isinstance(css, list):
             logger.warning(
                 "Invalid resources.css type: "
                 f"type={type(css).__name__}"
             )
-
             css = []
-
-        # --------------------------------------------------
-        # Images
-        # --------------------------------------------------
 
         images = resources.get(
             "images",
@@ -523,130 +365,57 @@ class RawHTMLRepository:
         )
 
         if images is None:
-
             images = []
 
-        elif not isinstance(
-            images,
-            list,
-        ):
-
+        elif not isinstance(images, list):
             logger.warning(
                 "Invalid resources.images type: "
                 f"type={type(images).__name__}"
             )
-
             images = []
-
-        # --------------------------------------------------
-        # Return normalized Resources
-        # --------------------------------------------------
 
         return {
             "css": css,
             "images": images,
         }
 
-    # ==================================================
-    # Ensure Indexes
-    # ==================================================
-
-    def _ensure_indexes(
-        self
-    ):
+    def _ensure_indexes(self):
         """
         建立 Raw HTML Lookup Index。
 
-        Index：
+        所有 Index 都不是 Unique。
 
-            article_id
-            document_id
-            url
-            resolved_url
-            content_hash
+        Duplicate Detection
+        仍由 ArchiveService 負責。
 
-            url + content_hash
+        article_id 只作為 Article 關聯 Lookup，
+        不參與 Duplicate Detection。
+
+        Archive Viewer 主要使用：
 
             url + created_at
-
-
-        注意：
-
-            所有 Index 都不是 Unique。
-
-            Duplicate Detection
-            仍由 ArchiveService 負責。
-
-
-        article_id：
-
-            只作為 Article 關聯 Lookup。
-
-            不參與 Duplicate Detection。
-
-
-        Archive Viewer：
-
-            主要使用：
-
-                url + created_at
         """
 
         try:
-
-            # ------------------------------------------
-            # Article ID
-            #
-            # Article 關聯 Lookup
-            #
-            # 不參與 Duplicate Detection
-            # ------------------------------------------
-
             self.collection.create_index(
                 "article_id"
             )
-
-            # ------------------------------------------
-            # Document ID
-            # ------------------------------------------
 
             self.collection.create_index(
                 "document_id"
             )
 
-            # ------------------------------------------
-            # URL
-            # ------------------------------------------
-
             self.collection.create_index(
                 "url"
             )
-
-            # ------------------------------------------
-            # Resolved URL
-            # ------------------------------------------
 
             self.collection.create_index(
                 "resolved_url"
             )
 
-            # ------------------------------------------
-            # Content Hash
-            # ------------------------------------------
-
             self.collection.create_index(
                 "content_hash"
             )
-
-            # ------------------------------------------
-            # URL + Content Hash
-            #
-            # Lookup
-            #
-            # Duplicate Decision：
-            #
-            #     ArchiveService
-            # ------------------------------------------
 
             self.collection.create_index(
                 [
@@ -654,12 +423,6 @@ class RawHTMLRepository:
                     ("content_hash", 1),
                 ]
             )
-
-            # ------------------------------------------
-            # URL + Created At
-            #
-            # Archive Version Lookup
-            # ------------------------------------------
 
             self.collection.create_index(
                 [
@@ -673,17 +436,11 @@ class RawHTMLRepository:
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML index initialization failed: "
                 f"{e}"
             )
-
             raise
-
-    # ==================================================
-    # Save
-    # ==================================================
 
     def save(
         self,
@@ -698,26 +455,17 @@ class RawHTMLRepository:
         """
         儲存 Raw HTML Snapshot。
 
-        Article 階段：
-
-            article_id
-                ↓
-            MongoDB raw_html.article_id
-
-
         Crawl 階段：
 
             article_id=None
 
             仍然可以正常保存。
 
-
         最小需求：
 
             url
             html
             content_hash
-
 
         可選 metadata：
 
@@ -726,30 +474,13 @@ class RawHTMLRepository:
             document_id
             resources
 
+        article_id 不參與 Duplicate Detection。
 
-        MongoDB：
+        Duplicate Detection：
 
-            article_id
-            url
-            resolved_url
-            html
-            content_hash
-            document_id
-            resources
-            created_at
-            updated_at
-
-
-        注意：
-
-            article_id 不參與 Duplicate Detection。
-
-            Duplicate Detection：
-
-                URL
-                +
-                Content Hash
-
+            URL
+            +
+            Content Hash
 
         本方法不負責：
 
@@ -759,14 +490,8 @@ class RawHTMLRepository:
             Resource Download
         """
 
-        # ==================================================
-        # Normalize Article ID
-        # ==================================================
-
         if article_id is not None:
-
             try:
-
                 article_id = int(
                     article_id
                 )
@@ -775,77 +500,49 @@ class RawHTMLRepository:
                 TypeError,
                 ValueError,
             ):
-
                 logger.warning(
                     "Invalid article_id: "
                     f"{article_id}"
                 )
-
                 return None
 
-        # ==================================================
-        # Validate URL
-        # ==================================================
-
         if url is None:
-
             logger.error(
                 "Raw HTML save failed: "
                 "url is None"
             )
-
             return None
 
-        url = str(
-            url
-        ).strip()
+        url = str(url).strip()
 
         if not url:
-
             logger.error(
                 "Raw HTML save failed: "
                 "url is empty"
             )
-
             return None
 
-        # ==================================================
-        # Validate HTML
-        # ==================================================
-
         if html is None:
-
             logger.error(
                 "Raw HTML save failed: "
                 "html is None"
             )
-
             return None
 
-        html = str(
-            html
-        )
+        html = str(html)
 
         if not html:
-
             logger.error(
                 "Raw HTML save failed: "
                 "html is empty"
             )
-
             return None
 
-        # ==================================================
-        # Validate Content Hash
-        # ==================================================
-
         if content_hash is None:
-
             logger.error(
                 "Raw HTML save failed: "
                 "content_hash is None"
             )
-
             return None
 
         content_hash = str(
@@ -853,105 +550,51 @@ class RawHTMLRepository:
         ).strip()
 
         if not content_hash:
-
             logger.error(
                 "Raw HTML save failed: "
                 "content_hash is empty"
             )
-
             return None
 
-        # ==================================================
-        # Normalize Resolved URL
-        # ==================================================
-
         if resolved_url is not None:
-
             resolved_url = str(
                 resolved_url
             ).strip()
 
             if not resolved_url:
-
                 resolved_url = None
 
-        # ==================================================
-        # Normalize Document ID
-        # ==================================================
-
         if document_id is not None:
-
             document_id = str(
                 document_id
             ).strip()
 
             if not document_id:
-
                 document_id = None
 
-        # ==================================================
-        # Normalize Resources
-        # ==================================================
-
-        resources = (
-            self._normalize_resources(
-                resources
-            )
+        resources = self._normalize_resources(
+            resources
         )
-
-        # ==================================================
-        # Current UTC Time
-        # ==================================================
 
         now = datetime.now(
             timezone.utc,
         )
 
-        # ==================================================
-        # MongoDB Document
-        # ==================================================
-
         document = {
-
-            "article_id":
-                article_id,
-
-            "document_id":
-                document_id,
-
-            "url":
-                url,
-
-            "resolved_url":
-                resolved_url,
-
-            "html":
-                html,
-
-            "content_hash":
-                content_hash,
-
-            "resources":
-                resources,
-
-            "created_at":
-                now,
-
-            "updated_at":
-                now,
-
+            "article_id": article_id,
+            "document_id": document_id,
+            "url": url,
+            "resolved_url": resolved_url,
+            "html": html,
+            "content_hash": content_hash,
+            "resources": resources,
+            "created_at": now,
+            "updated_at": now,
         }
 
-        # ==================================================
-        # Insert
-        # ==================================================
-
         try:
-
-            result = (
-                self.collection.insert_one(
-                    document
-                )
+            result = self.collection.insert_one(
+                document
             )
 
             mongo_id = str(
@@ -974,17 +617,11 @@ class RawHTMLRepository:
             return mongo_id
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML save failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Save Crawl Result
-    # ==================================================
 
     def save_crawl_result(
         self,
@@ -1004,7 +641,6 @@ class RawHTMLRepository:
             resources
             document_id
 
-
         Crawl 階段：
 
             article_id 可以為 None。
@@ -1015,17 +651,11 @@ class RawHTMLRepository:
         """
 
         if crawl_result is None:
-
             logger.error(
                 "save_crawl_result failed: "
                 "crawl_result is None"
             )
-
             return None
-
-        # ==================================================
-        # Crawl Success Validation
-        # ==================================================
 
         success = getattr(
             crawl_result,
@@ -1034,17 +664,11 @@ class RawHTMLRepository:
         )
 
         if not success:
-
             logger.warning(
                 "save_crawl_result skipped: "
                 "crawl_result is not successful"
             )
-
             return None
-
-        # ==================================================
-        # Extract CrawlResult
-        # ==================================================
 
         article_id = getattr(
             crawl_result,
@@ -1088,31 +712,15 @@ class RawHTMLRepository:
             None
         )
 
-        # ==================================================
-        # Save
-        # ==================================================
-
         return self.save(
-
             article_id=article_id,
-
             url=url,
-
             resolved_url=resolved_url,
-
             html=html,
-
             content_hash=content_hash,
-
             document_id=document_id,
-
             resources=resources,
-
         )
-
-    # ==================================================
-    # Find By MongoDB ID
-    # ==================================================
 
     def find_by_id(
         self,
@@ -1124,49 +732,33 @@ class RawHTMLRepository:
         """
 
         if not mongo_id:
-
             return None
 
         try:
-
             object_id = ObjectId(
-                str(
-                    mongo_id
-                )
+                str(mongo_id)
             )
 
         except Exception:
-
             logger.warning(
                 "Invalid MongoDB ObjectId: "
                 f"{mongo_id}"
             )
-
             return None
 
         try:
-
-            return (
-                self.collection.find_one(
-                    {
-                        "_id":
-                            object_id
-                    }
-                )
+            return self.collection.find_one(
+                {
+                    "_id": object_id
+                }
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_by_id failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Find By Document ID
-    # ==================================================
 
     def find_by_document_id(
         self,
@@ -1178,7 +770,6 @@ class RawHTMLRepository:
         """
 
         if not document_id:
-
             return None
 
         document_id = str(
@@ -1186,41 +777,27 @@ class RawHTMLRepository:
         ).strip()
 
         if not document_id:
-
             return None
 
         try:
-
-            return (
-                self.collection.find_one(
-
-                    {
-                        "document_id":
-                            document_id
-                    },
-
-                    sort=[
-                        (
-                            "created_at",
-                            -1
-                        )
-                    ]
-
-                )
+            return self.collection.find_one(
+                {
+                    "document_id": document_id
+                },
+                sort=[
+                    (
+                        "created_at",
+                        -1
+                    )
+                ]
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_by_document_id failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Find By URL
-    # ==================================================
 
     def find_by_url(
         self,
@@ -1236,49 +813,32 @@ class RawHTMLRepository:
         """
 
         if not url:
-
             return None
 
-        url = str(
-            url
-        ).strip()
+        url = str(url).strip()
 
         if not url:
-
             return None
 
         try:
-
-            return (
-                self.collection.find_one(
-
-                    {
-                        "url":
-                            url
-                    },
-
-                    sort=[
-                        (
-                            "created_at",
-                            -1
-                        )
-                    ]
-
-                )
+            return self.collection.find_one(
+                {
+                    "url": url
+                },
+                sort=[
+                    (
+                        "created_at",
+                        -1
+                    )
+                ]
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_by_url failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Find Versions By URL
-    # ==================================================
 
     def find_versions_by_url(
         self,
@@ -1288,60 +848,34 @@ class RawHTMLRepository:
         取得指定 URL 的所有 Raw HTML Snapshot
         歷史保存版本。
 
-        Archive Version 對使用者而言：
+        Archive Version：
 
-            只顯示保存成功日期。
-
-
-        回傳：
-
-            mongo_id
-            created_at
-
-
-        content_hash：
-
-            保留給內部使用。
-
-            不需要顯示在 Archive UI。
-
-
-        不回傳：
-
-            html
-            resources
-
+            只回傳保存日期與 MongoDB ID。
 
         最新保存版本在前。
+
+        相同 URL + created_at
+        視為同一個版本，重複版本只保留第一筆。
         """
 
         if not url:
-
             return []
 
-        url = str(
-            url
-        ).strip()
+        url = str(url).strip()
 
         if not url:
-
             return []
 
         try:
-
             cursor = (
                 self.collection.find(
-
                     {
-                        "url":
-                            url
+                        "url": url
                     },
-
                     {
                         "_id": 1,
                         "created_at": 1
                     }
-
                 )
                 .sort(
                     "created_at",
@@ -1350,13 +884,11 @@ class RawHTMLRepository:
             )
 
             versions = []
+            seen_versions = set()
 
             for document in cursor:
-
-                created_at = (
-                    document.get(
-                        "created_at"
-                    )
+                created_at = document.get(
+                    "created_at"
                 )
 
                 normalized_created_at = (
@@ -1366,20 +898,28 @@ class RawHTMLRepository:
                 )
 
                 if normalized_created_at is None:
-
                     continue
 
-                versions.append({
+                version_key = (
+                    normalized_created_at.isoformat()
+                )
 
-                    "mongo_id":
-                        str(
+                if version_key in seen_versions:
+                    continue
+
+                seen_versions.add(
+                    version_key
+                )
+
+                versions.append(
+                    {
+                        "mongo_id": str(
                             document["_id"]
                         ),
-
-                    "created_at":
-                        normalized_created_at,
-
-                })
+                        "created_at":
+                            normalized_created_at,
+                    }
+                )
 
             logger.info(
                 "Raw HTML versions found by URL: "
@@ -1390,17 +930,11 @@ class RawHTMLRepository:
             return versions
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_versions_by_url failed: "
                 f"{e}"
             )
-
             return []
-
-    # ==================================================
-    # Find By URL + Time
-    # ==================================================
 
     def find_by_url_and_time(
         self,
@@ -1408,12 +942,7 @@ class RawHTMLRepository:
         created_at
     ):
         """
-        依：
-
-            URL
-            +
-            created_at
-
+        依 URL + created_at
         查詢指定 Raw HTML Snapshot。
 
         Archive Version Identity：
@@ -1422,7 +951,6 @@ class RawHTMLRepository:
             +
             created_at
 
-
         V5 datetime policy：
 
             created_at 必須先統一成
@@ -1430,67 +958,37 @@ class RawHTMLRepository:
         """
 
         if not url:
-
             return None
 
         if created_at is None:
-
             return None
 
-        url = str(
-            url
-        ).strip()
+        url = str(url).strip()
 
         if not url:
-
             return None
 
-        # ==================================================
-        # Normalize Created At
-        # ==================================================
-
-        created_at = (
-            self._normalize_datetime(
-                created_at
-            )
+        created_at = self._normalize_datetime(
+            created_at
         )
 
         if created_at is None:
-
             return None
 
-        # ==================================================
-        # MongoDB Lookup
-        # ==================================================
-
         try:
-
-            return (
-                self.collection.find_one(
-
-                    {
-                        "url":
-                            url,
-
-                        "created_at":
-                            created_at
-                    }
-
-                )
+            return self.collection.find_one(
+                {
+                    "url": url,
+                    "created_at": created_at
+                }
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_by_url_and_time failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Find HTML By URL + Time
-    # ==================================================
 
     def find_html_by_url_and_time(
         self,
@@ -1498,35 +996,23 @@ class RawHTMLRepository:
         created_at
     ):
         """
-        依：
-
-            URL
-            +
-            created_at
-
+        依 URL + created_at
         取得指定歷史保存版本的 Raw HTML。
 
         只回傳 HTML。
         """
 
-        document = (
-            self.find_by_url_and_time(
-                url,
-                created_at
-            )
+        document = self.find_by_url_and_time(
+            url,
+            created_at
         )
 
         if document is None:
-
             return None
 
         return document.get(
             "html"
         )
-
-    # ==================================================
-    # Find By Resolved URL
-    # ==================================================
 
     def find_by_resolved_url(
         self,
@@ -1538,7 +1024,6 @@ class RawHTMLRepository:
         """
 
         if not resolved_url:
-
             return None
 
         resolved_url = str(
@@ -1546,41 +1031,27 @@ class RawHTMLRepository:
         ).strip()
 
         if not resolved_url:
-
             return None
 
         try:
-
-            return (
-                self.collection.find_one(
-
-                    {
-                        "resolved_url":
-                            resolved_url
-                    },
-
-                    sort=[
-                        (
-                            "created_at",
-                            -1
-                        )
-                    ]
-
-                )
+            return self.collection.find_one(
+                {
+                    "resolved_url": resolved_url
+                },
+                sort=[
+                    (
+                        "created_at",
+                        -1
+                    )
+                ]
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_by_resolved_url failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Find By Content Hash
-    # ==================================================
 
     def find_by_content_hash(
         self,
@@ -1595,7 +1066,6 @@ class RawHTMLRepository:
         """
 
         if not content_hash:
-
             return None
 
         content_hash = str(
@@ -1603,41 +1073,27 @@ class RawHTMLRepository:
         ).strip()
 
         if not content_hash:
-
             return None
 
         try:
-
-            return (
-                self.collection.find_one(
-
-                    {
-                        "content_hash":
-                            content_hash
-                    },
-
-                    sort=[
-                        (
-                            "created_at",
-                            -1
-                        )
-                    ]
-
-                )
+            return self.collection.find_one(
+                {
+                    "content_hash": content_hash
+                },
+                sort=[
+                    (
+                        "created_at",
+                        -1
+                    )
+                ]
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_by_content_hash failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Find By URL + Content Hash
-    # ==================================================
 
     def find_by_url_and_content_hash(
         self,
@@ -1645,11 +1101,7 @@ class RawHTMLRepository:
         content_hash
     ):
         """
-        查詢：
-
-            URL
-            +
-            Content Hash
+        查詢 URL + Content Hash。
 
         僅提供 Lookup。
 
@@ -1657,59 +1109,36 @@ class RawHTMLRepository:
 
             ArchiveService
 
-
-        注意：
-
-            article_id 不參與查詢。
+        article_id 不參與查詢。
         """
 
         if not url:
-
             return None
 
         if not content_hash:
-
             return None
 
-        url = str(
-            url
-        ).strip()
-
-        content_hash = str(
-            content_hash
-        ).strip()
+        url = str(url).strip()
+        content_hash = str(content_hash).strip()
 
         if not url or not content_hash:
-
             return None
 
         try:
-
-            return (
-                self.collection.find_one(
-                    {
-                        "url":
-                            url,
-
-                        "content_hash":
-                            content_hash
-                    }
-                )
+            return self.collection.find_one(
+                {
+                    "url": url,
+                    "content_hash": content_hash
+                }
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML find_by_url_and_content_hash "
                 "failed: "
                 f"{e}"
             )
-
             return None
-
-    # ==================================================
-    # Exists By Document ID
-    # ==================================================
 
     def exists(
         self,
@@ -1722,7 +1151,6 @@ class RawHTMLRepository:
         """
 
         if not document_id:
-
             return False
 
         document_id = str(
@@ -1730,40 +1158,26 @@ class RawHTMLRepository:
         ).strip()
 
         if not document_id:
-
             return False
 
         try:
-
-            result = (
-                self.collection.find_one(
-
-                    {
-                        "document_id":
-                            document_id
-                    },
-
-                    {
-                        "_id": 1
-                    }
-
-                )
+            result = self.collection.find_one(
+                {
+                    "document_id": document_id
+                },
+                {
+                    "_id": 1
+                }
             )
 
             return result is not None
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML exists check failed: "
                 f"{e}"
             )
-
             return False
-
-    # ==================================================
-    # Exists By URL + Content Hash
-    # ==================================================
 
     def exists_by_url_and_content_hash(
         self,
@@ -1773,75 +1187,47 @@ class RawHTMLRepository:
         """
         檢查 URL + Content Hash 是否存在。
 
-        注意：
+        只提供 Lookup。
 
-            只提供 Lookup。
+        Duplicate Decision：
 
-            不代表 Duplicate。
-
-            Duplicate Decision：
-
-                ArchiveService
-
+            ArchiveService
 
         article_id 不參與查詢。
         """
 
         if not url:
-
             return False
 
         if not content_hash:
-
             return False
 
-        url = str(
-            url
-        ).strip()
-
-        content_hash = str(
-            content_hash
-        ).strip()
+        url = str(url).strip()
+        content_hash = str(content_hash).strip()
 
         if not url or not content_hash:
-
             return False
 
         try:
-
-            result = (
-                self.collection.find_one(
-
-                    {
-                        "url":
-                            url,
-
-                        "content_hash":
-                            content_hash
-                    },
-
-                    {
-                        "_id": 1
-                    }
-
-                )
+            result = self.collection.find_one(
+                {
+                    "url": url,
+                    "content_hash": content_hash
+                },
+                {
+                    "_id": 1
+                }
             )
 
             return result is not None
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML URL + Content Hash "
                 "existence check failed: "
                 f"{e}"
             )
-
             return False
-
-    # ==================================================
-    # Update Metadata
-    # ==================================================
 
     def update_metadata(
         self,
@@ -1857,11 +1243,9 @@ class RawHTMLRepository:
                     ↓
             補回 Document Identity
 
-
         更新：
 
             document_id
-
 
         不更新：
 
@@ -1873,22 +1257,13 @@ class RawHTMLRepository:
             resources
             created_at
 
-
-        updated_at：
-
-            使用 UTC datetime。
+        updated_at 使用 UTC datetime。
         """
 
         if not mongo_id:
-
             return False
 
-        # ==================================================
-        # Normalize Document ID
-        # ==================================================
-
         if document_id is None:
-
             return False
 
         document_id = str(
@@ -1896,56 +1271,34 @@ class RawHTMLRepository:
         ).strip()
 
         if not document_id:
-
             return False
 
         update_data = {
-
-            "document_id":
-                document_id,
-
-            "updated_at":
-                datetime.now(
-                    timezone.utc
-                ),
-
+            "document_id": document_id,
+            "updated_at": datetime.now(
+                timezone.utc
+            ),
         }
 
-        # ==================================================
-        # MongoDB Update
-        # ==================================================
-
         try:
-
             object_id = ObjectId(
-                str(
-                    mongo_id
-                )
+                str(mongo_id)
             )
 
-            result = (
-                self.collection.update_one(
-
-                    {
-                        "_id":
-                            object_id
-                    },
-
-                    {
-                        "$set":
-                            update_data
-                    }
-
-                )
+            result = self.collection.update_one(
+                {
+                    "_id": object_id
+                },
+                {
+                    "$set": update_data
+                }
             )
 
             if result.matched_count == 0:
-
                 logger.warning(
                     "Raw HTML metadata update failed: "
                     f"mongo_id={mongo_id}"
                 )
-
                 return False
 
             logger.info(
@@ -1957,17 +1310,11 @@ class RawHTMLRepository:
             return True
 
         except Exception as e:
-
             logger.exception(
                 "Raw HTML metadata update failed: "
                 f"{e}"
             )
-
             return False
-
-    # ==================================================
-    # Update HTML By MongoDB ID
-    # ==================================================
 
     def update_html_by_id(
         self,
@@ -1979,12 +1326,9 @@ class RawHTMLRepository:
         依 MongoDB Snapshot ID
         更新 Raw HTML。
 
-        注意：
+        content_hash 必須由上游產生。
 
-            content_hash 必須由上游產生。
-
-            Repository 不自行計算 Hash。
-
+        Repository 不自行計算 Hash。
 
         不更新：
 
@@ -1993,72 +1337,47 @@ class RawHTMLRepository:
         """
 
         if not mongo_id:
-
             return False
 
         if html is None:
-
             return False
 
         if content_hash is None:
-
             return False
 
-        html = str(
-            html
-        )
-
+        html = str(html)
         content_hash = str(
             content_hash
         ).strip()
 
         if not html or not content_hash:
-
             return False
 
         try:
-
             object_id = ObjectId(
-                str(
-                    mongo_id
-                )
+                str(mongo_id)
             )
 
-            result = (
-                self.collection.update_one(
-
-                    {
-                        "_id":
-                            object_id
-                    },
-
-                    {
-                        "$set": {
-
-                            "html":
-                                html,
-
-                            "content_hash":
-                                content_hash,
-
-                            "updated_at":
-                                datetime.now(
-                                    timezone.utc
-                                ),
-
-                        }
+            result = self.collection.update_one(
+                {
+                    "_id": object_id
+                },
+                {
+                    "$set": {
+                        "html": html,
+                        "content_hash": content_hash,
+                        "updated_at": datetime.now(
+                            timezone.utc
+                        ),
                     }
-
-                )
+                }
             )
 
             if result.matched_count == 0:
-
                 logger.warning(
                     "Raw HTML update failed: "
                     f"mongo_id={mongo_id}"
                 )
-
                 return False
 
             logger.info(
@@ -2070,17 +1389,11 @@ class RawHTMLRepository:
             return True
 
         except Exception as e:
-
             logger.exception(
                 "Raw HTML update failed: "
                 f"{e}"
             )
-
             return False
-
-    # ==================================================
-    # Delete By MongoDB ID
-    # ==================================================
 
     def delete_by_id(
         self,
@@ -2092,28 +1405,20 @@ class RawHTMLRepository:
         """
 
         if not mongo_id:
-
             return False
 
         try:
-
             object_id = ObjectId(
-                str(
-                    mongo_id
-                )
+                str(mongo_id)
             )
 
-            result = (
-                self.collection.delete_one(
-                    {
-                        "_id":
-                            object_id
-                    }
-                )
+            result = self.collection.delete_one(
+                {
+                    "_id": object_id
+                }
             )
 
             if result.deleted_count == 0:
-
                 return False
 
             logger.info(
@@ -2124,17 +1429,11 @@ class RawHTMLRepository:
             return True
 
         except Exception as e:
-
             logger.exception(
                 "Raw HTML delete_by_id failed: "
                 f"{e}"
             )
-
             return False
-
-    # ==================================================
-    # Delete By Document ID
-    # ==================================================
 
     def delete_by_document_id(
         self,
@@ -2146,7 +1445,6 @@ class RawHTMLRepository:
         """
 
         if not document_id:
-
             return False
 
         document_id = str(
@@ -2154,24 +1452,16 @@ class RawHTMLRepository:
         ).strip()
 
         if not document_id:
-
             return False
 
         try:
-
-            result = (
-                self.collection.delete_many(
-
-                    {
-                        "document_id":
-                            document_id
-                    }
-
-                )
+            result = self.collection.delete_many(
+                {
+                    "document_id": document_id
+                }
             )
 
             if result.deleted_count == 0:
-
                 return False
 
             logger.info(
@@ -2183,17 +1473,11 @@ class RawHTMLRepository:
             return True
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML delete_by_document_id failed: "
                 f"{e}"
             )
-
             return False
-
-    # ==================================================
-    # Count
-    # ==================================================
 
     def count(
         self
@@ -2203,28 +1487,17 @@ class RawHTMLRepository:
         """
 
         try:
-
-            return (
-                self.collection.count_documents(
-                    {}
-                )
+            return self.collection.count_documents(
+                {}
             )
 
         except PyMongoError as e:
-
             logger.exception(
                 "Raw HTML count failed: "
                 f"{e}"
             )
-
             return 0
 
-
-# ==================================================
-#
-# Public API
-#
-# ==================================================
 
 __all__ = [
     "RawHTMLRepository",
